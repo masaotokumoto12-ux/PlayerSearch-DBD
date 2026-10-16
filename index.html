@@ -2,37 +2,20 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <!-- モバイルフレンドリーおよびPWA用のビューポート設定（ズーム無効化によるアプリライクな挙動） -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-  
   <title>Player Check Pro</title>
-  
-  <!-- 
-    Content Security Policy (CSP)
-    単一ファイル動作に必要なインライン実行のみを許可し、外部との通信を完全遮断。
-    データ流出（Exfiltration）をブラウザレベルで物理的に防ぐ究極の防御設定。
-  -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none';" />
-  
   <meta name="theme-color" content="#0c0d0f" />
   <meta name="color-scheme" content="dark" />
   <meta name="description" content="対戦相手のSNS・配信アカウントを1タップで特定するプロフェッショナルツール" />
-  
-  <!-- iOS Safari用: PWAスタンドアロンモードおよびUIのネイティブ化 -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PlayerCheck" />
 
-  <!-- 
-    Base64エンコードされたSVGアイコン（Data URI）
-    画像サーバーへの依存を断ち切り、iOSのホーム画面に高精細なアプリアイコンを提供。
-    背景色を明示し、iOSによる透過部分の黒塗りつぶし現象を回避。
-  -->
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzBDBDBERiIvPjxwYXRoIGQ9Ik0yNTYgODBDMTU4LjkgODAgODAgMTU4LjkgODAgMjU2czc4LjkgMTc2IDE3NiAxNzYgMTc2LTc4LjkgMTc2LTE3NlMzNTMuMSA4MCAyNTYgODB6bTAgMzE2Yy03Ny4zIDAtMTQwLTYyLjctMTQwLTE0MHM2Mi43LTE0MCAxNDAtMTQwIDE0MCA2Mi43MTQwIDE0MC02Mi43IDE0MC0xNDAgMTQweiIgZmlsbD0iIzhhYjRmOCIvPjxwYXRoIGQ9Ik0yNTYgMTUyYy01Ny40IDAtMTA0IDQ2LjYtMTA0IDEwNHM0Ni42IDEwNCAxMDQgMTA0IDEwNC00Ni42IDEwNC0xMDRTMzEzLjQgMTUyIDI1NiAxNTJ6bTAgMTc2Yy0zOS43IDAtNzItMzIuMy03Mi03MnMzMi4zLTcyIDcyLTcyIDcyIDMyLjMgNzIgNzItMzIuMyA3Mi03MiA3MnoiIGZpbGw9IiM4YWI0ZjgiLz48L3N2Zz4=" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzBDBDBERiIvPjxwYXRoIGQ9Ik0yNTYgODBDMTU4LjkgODAgODAgMTU4LjkgODAgMjU2czc4LjkgMTc2IDE3NiAxNzYgMTc2LTc4LjkgMTc2LTE3NlMzNTMuMSA4MCAyNTYgODB6bTAgMzE2Yy03Ny4zIDAtMTQwLTYyLjctMTQwLTE0MHM2Mi43LTE0MCAxNDAtMTQwIDE0MCA2Mi43MTQwIDE0MC02Mi43IDE0MC0xNDAgMTQweiIgZmlsbD0iIzhhYjRmOCIvPjxwYXRoIGQ9Ik0yNTYgMTUyYy01Ny40IDAtMTA0IDQ2LjYtMTA0IDEwNHM0Ni42IDEwNCAxMDQgMTA0IDEwNC00Ni42IDEwNC0xMDRTMzEzLjQgMTUyIDI1NiAxNTJ6bTAgMTc2Yy0zOS43IDAtNzItMzIuMy03Mi03MnMzMi4zLTcyIDcyLTcyIDcyIDMyLjMgNzIgNzItMzIuMyA3Mi03MiA3MnoiIGZpbGw9IiM4YWI0ZjgiLz48L3N2Zz4=" />
 
   <style>
-    /* WCAG 2.2 / Apple HIG アクセシビリティ基準に準拠したデザインシステム */
     :root {
       color-scheme: dark;
       --bg: #0c0d0f;
@@ -43,13 +26,11 @@
       --accent: #8ab4f8;
       --danger: #f28b82;
       --radius: 12px;
-      /* モバイルの誤操作を防ぐため、W3CおよびApple推奨の48pxのタッチターゲットを確保 */
       --tap-target: 48px; 
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      /* iPhoneのノッチ領域（セーフエリア）を考慮した余白設定 */
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       min-height: 100dvh;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -78,7 +59,6 @@
       font-size: 0.9rem;
       margin: 0;
     }
-    /* PWAインストールを促すバナーUI */
     .install-banner {
       display: none; 
       background: rgba(138, 180, 248, 0.1);
@@ -266,13 +246,11 @@
       <p class="sub">1-Tap SNS & Stream Finder (Standalone PWA)</p>
     </header>
     
-    <!-- iOSデバイスにおいてPWA化（ホーム画面への追加）を案内するバナー -->
     <div id="ios-install-banner" class="install-banner">
       <strong>💡 データ永続化のための重要設定</strong>
-      <p>Safariの仕様により、7日間アクセスがないと入力データが自動消去されます。ブラウザの「共有」から<strong>「ホーム画面に追加」</strong>を行うことで、データが保護され、次回以降1タップ起動が可能になります。</p>
+      <p>Safariの仕様（ITP）により、7日間アクセスがないと入力データが自動消去されます。ブラウザ下部の「共有」アイコンから<strong>「ホーム画面に追加」</strong>を行うことで、データが永続化され、次回以降1タップでフルスクリーン起動が可能になります。</p>
     </div>
 
-    <!-- ユーザーの選択肢を拡張する設定パネル -->
     <div class="config-block">
       <div class="config-row">
         <label class="field-label" for="game-title">対象ゲームタイトル（検索時のプレフィックス）</label>
@@ -318,7 +296,6 @@
         results: []
       };
 
-      // 動的マニフェストインジェクション（外部サーバーなしでPWA化を実現）
       function injectDynamicManifest() {
         const iconBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUMDNGM2iSMAAAANklEQVR42u3BAQEAAACCIP+vbxfMAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8G4IAAAH11O/WAAAAAElFTkSuQmCC"; 
         const manifestJSON = {
@@ -340,7 +317,7 @@
           link.rel = "manifest";
           link.href = URL.createObjectURL(blob);
           document.head.appendChild(link);
-        } catch(e) {}
+        } catch(e) { }
       }
 
       function checkIOSInstallSuggestion() {
@@ -357,7 +334,7 @@
           if (url.protocol === "http:" || url.protocol === "https:") {
             return url.href;
           }
-        } catch (e) {}
+        } catch (e) { }
         return "about:blank";
       }
 
@@ -411,7 +388,7 @@
           return {
             platformName: platform.name,
             desc: platform.desc,
-            url: getSafeUrl(targetUrl)
+            url: getSafeUrl(targetUrl) 
           };
         });
       }
@@ -421,7 +398,7 @@
           appState.gameTitle = document.getElementById("game-title").value;
           appState.searchMode = document.getElementById("search-mode").value;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-        } catch (e) {}
+        } catch (e) { }
       }
 
       function loadState() {
@@ -434,10 +411,9 @@
             if (Array.isArray(parsed.inputs) && parsed.inputs.length > 0) appState.inputs = parsed.inputs;
             if (Array.isArray(parsed.results)) appState.results = parsed.results;
           }
-        } catch (e) {}
+        } catch (e) { }
       }
 
-      // innerHTMLを排除しDOMベースXSSを防止するセキュアレンダリング
       function renderInputForm() {
         const container = document.getElementById("names-container");
         container.innerHTML = ""; 
@@ -450,6 +426,7 @@
             const addBtn = document.createElement("button");
             addBtn.className = "icon-btn add-btn";
             addBtn.textContent = "＋";
+            addBtn.title = "スロットを追加";
             addBtn.disabled = appState.inputs.length >= MAX_SLOTS;
             addBtn.addEventListener("click", function() {
               if (appState.inputs.length >= MAX_SLOTS) return;
@@ -485,6 +462,7 @@
             const rmBtn = document.createElement("button");
             rmBtn.className = "icon-btn rm-btn";
             rmBtn.textContent = "×";
+            rmBtn.title = "削除";
             rmBtn.addEventListener("click", function() {
               updateInputsFromDOM();
               appState.inputs.splice(index, 1);
