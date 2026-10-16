@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <!-- モバイルフレンドリーおよびPWA用のビューポート設定（ズーム無効化によるアプリライクな挙動） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  
+  <title>Player Check Pro</title>
+  
+  <!-- 
+    Content Security Policy (CSP)
+    単一ファイル動作に必要なインライン実行のみを許可し、外部との通信を完全遮断。
+    データ流出（Exfiltration）をブラウザレベルで物理的に防ぐ究極の防御設定。
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none';" />
+  
+  <meta name="theme-color" content="#0c0d0f" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="対戦相手のSNS・配信アカウントを1タップで特定するプロフェッショナルツール" />
+  
+  <!-- iOS Safari用: PWAスタンドアロンモードおよびUIのネイティブ化 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PlayerCheck" />
+
+  <!-- 
+    Base64エンコードされたSVGアイコン（Data URI）
+    画像サーバーへの依存を断ち切り、iOSのホーム画面に高精細なアプリアイコンを提供。
+    背景色を明示し、iOSによる透過部分の黒塗りつぶし現象を回避。
+  -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzBDBDBERiIvPjxwYXRoIGQ9Ik0yNTYgODBDMTU4LjkgODAgODAgMTU4LjkgODAgMjU2czc4LjkgMTc2IDE3NiAxNzYgMTc2LTc4LjkgMTc2LTE3NlMzNTMuMSA4MCAyNTYgODB6bTAgMzE2Yy03Ny4zIDAtMTQwLTYyLjctMTQwLTE0MHM2Mi43LTE0MCAxNDAtMTQwIDE0MCA2Mi43MTQwIDE0MC02Mi43IDE0MC0xNDAgMTQweiIgZmlsbD0iIzhhYjRmOCIvPjxwYXRoIGQ9Ik0yNTYgMTUyYy01Ny40IDAtMTA0IDQ2LjYtMTA0IDEwNHM0Ni42IDEwNCAxMDQgMTA0IDEwNC00Ni42IDEwNC0xMDRTMzEzLjQgMTUyIDI1NiAxNTJ6bTAgMTc2Yy0zOS43IDAtNzItMzIuMy03Mi03MnMzMi4zLTcyIDcyLTcyIDcyIDMyLjMgNzIgNzItMzIuMyA3Mi03MiA3MnoiIGZpbGw9IiM4YWI0ZjgiLz48L3N2Zz4=" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzBDBDBERiIvPjxwYXRoIGQ9Ik0yNTYgODBDMTU4LjkgODAgODAgMTU4LjkgODAgMjU2czc4LjkgMTc2IDE3NiAxNzYgMTc2LTc4LjkgMTc2LTE3NlMzNTMuMSA4MCAyNTYgODB6bTAgMzE2Yy03Ny4zIDAtMTQwLTYyLjctMTQwLTE0MHM2Mi43LTE0MCAxNDAtMTQwIDE0MCA2Mi43MTQwIDE0MC02Mi43IDE0MC0xNDAgMTQweiIgZmlsbD0iIzhhYjRmOCIvPjxwYXRoIGQ9Ik0yNTYgMTUyYy01Ny40IDAtMTA0IDQ2LjYtMTA0IDEwNHM0Ni42IDEwNCAxMDQgMTA0IDEwNC00Ni42IDEwNC0xMDRTMzEzLjQgMTUyIDI1NiAxNTJ6bTAgMTc2Yy0zOS43IDAtNzItMzIuMy03Mi03MnMzMi4zLTcyIDcyLTcyIDcyIDMyLjMgNzIgNzItMzIuMyA3Mi03MiA3MnoiIGZpbGw9IiM4YWI0ZjgiLz48L3N2Zz4=" />
+
+  <style>
+    /* WCAG 2.2 / Apple HIG アクセシビリティ基準に準拠したデザインシステム */
+    :root {
+      color-scheme: dark;
+      --bg: #0c0d0f;
+      --surface: #16181c;
+      --border: #2a2e35;
+      --fg: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #8ab4f8;
+      --danger: #f28b82;
+      --radius: 12px;
+      /* モバイルの誤操作を防ぐため、W3CおよびApple推奨の48pxのタッチターゲットを確保 */
+      --tap-target: 48px; 
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      /* iPhoneのノッチ領域（セーフエリア）を考慮した余白設定 */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      min-height: 100dvh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    /* PWAインストールを促すバナーUI */
+    .install-banner {
+      display: none; 
+      background: rgba(138, 180, 248, 0.1);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .install-banner strong { color: var(--accent); display: block; margin-bottom: 4px; }
+    .install-banner p { margin: 0; font-size: 0.85rem; color: var(--fg); }
+    
+    .config-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .config-row { margin-bottom: 16px; }
+    .config-row:last-child { margin-bottom: 0; }
+    
+    label.field-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .names {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .name-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .icon-btn {
+      min-height: var(--tap-target);
+      min-width: var(--tap-target);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: var(--radius);
+      font-size: 1.25rem;
+      font-weight: bold;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-btn { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
+    .rm-btn { background: transparent; color: var(--danger); border: 1px solid var(--border); }
+    .add-btn:active, .rm-btn:active { opacity: 0.7; }
+    .add-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: var(--border); color: var(--muted); }
+    
+    input[type="text"] {
+      flex: 1;
+      min-height: var(--tap-target);
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 1rem;
+      outline: none;
+      min-width: 0;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+    
+    select.ui-select {
+      width: 100%;
+      min-height: var(--tap-target);
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 1rem;
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    select.ui-select:focus { border-color: var(--accent); }
+
+    button.primary-btn {
+      width: 100%;
+      min-height: 56px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: #000;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 32px;
+      transition: transform 0.1s, opacity 0.2s;
+      box-shadow: 0 4px 12px rgba(138, 180, 248, 0.2);
+    }
+    button.primary-btn:active { transform: scale(0.98); opacity: 0.9; }
+    
+    .player-block {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+    .player-block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .player-block-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .delete-block-btn {
+      background: transparent;
+      border: none;
+      color: var(--danger);
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 6px;
+      min-height: 36px;
+    }
+    .delete-block-btn:active { background: rgba(242, 139, 130, 0.1); }
+    
+    ul.result-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    li.result-item {
+      display: flex;
+      align-items: center;
+      background: #1c1f26;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    li.result-item:active { background: #2a2e35; }
+    
+    a.card-link {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: var(--fg);
+      min-height: var(--tap-target);
+      min-width: 0;
+    }
+    .card-title { font-weight: 600; font-size: 0.95rem; }
+    .card-hint { font-size: 0.8rem; color: var(--muted); }
+    
+    .empty-msg {
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+      padding: 24px 0;
+    }
+    .spacer { min-width: var(--tap-target); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Player Check Pro</h1>
+      <p class="sub">1-Tap SNS & Stream Finder (Standalone PWA)</p>
+    </header>
+    
+    <!-- iOSデバイスにおいてPWA化（ホーム画面への追加）を案内するバナー -->
+    <div id="ios-install-banner" class="install-banner">
+      <strong>💡 データ永続化のための重要設定</strong>
+      <p>Safariの仕様により、7日間アクセスがないと入力データが自動消去されます。ブラウザの「共有」から<strong>「ホーム画面に追加」</strong>を行うことで、データが保護され、次回以降1タップ起動が可能になります。</p>
+    </div>
+
+    <!-- ユーザーの選択肢を拡張する設定パネル -->
+    <div class="config-block">
+      <div class="config-row">
+        <label class="field-label" for="game-title">対象ゲームタイトル（検索時のプレフィックス）</label>
+        <input type="text" id="game-title" placeholder="例: dbd, apex, valorant" value="dbd" autocomplete="off" autocorrect="off" spellcheck="false" />
+      </div>
+      <div class="config-row">
+        <label class="field-label" for="search-mode">検索ルーティングモード</label>
+        <select id="search-mode" class="ui-select">
+          <option value="smart">スマート検索（ID形式は直接ジャンプ、その他はGoogle）</option>
+          <option value="force-google">すべてGoogleサイト内検索を強制</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="field-label">プレイヤー名入力（最大4名）</label>
+    <div class="names" id="names-container"></div>
+
+    <button type="button" id="btn-search" class="primary-btn">一括検索を実行</button>
+
+    <div id="results-container"></div>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const MAX_SLOTS = 4;
+      const STORAGE_KEY = "player-check-pro-data";
+      
+      const PLATFORMS = [
+        { id: "steam", name: "Steam", desc: "コミュニティ検索" },
+        { id: "youtube", name: "YouTube", desc: "動画・チャンネル" },
+        { id: "twitch", name: "Twitch", desc: "配信チャンネル" },
+        { id: "x", name: "X (Twitter)", desc: "ポスト・アカウント" },
+        { id: "tiktok", name: "TikTok", desc: "ユーザー検索" },
+        { id: "5ch", name: "5ちゃんねる", desc: "掲示板スレッド" }
+      ];
+
+      let appState = {
+        gameTitle: "dbd",
+        searchMode: "smart",
+        inputs: [""],
+        results: []
+      };
+
+      // 動的マニフェストインジェクション（外部サーバーなしでPWA化を実現）
+      function injectDynamicManifest() {
+        const iconBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAAA1BMVEUMDNGM2iSMAAAANklEQVR42u3BAQEAAACCIP+vbxfMAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB8G4IAAAH11O/WAAAAAElFTkSuQmCC"; 
+        const manifestJSON = {
+          name: "Player Check Pro",
+          short_name: "PlayerCheck",
+          description: "対戦相手のSNS・配信アカウントを特定するツール",
+          start_url: ".",
+          display: "standalone",
+          background_color: "#0c0d0f",
+          theme_color: "#0c0d0f",
+          icons: [
+            { src: iconBase64, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+            { src: iconBase64, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+          ]
+        };
+        try {
+          const blob = new Blob([JSON.stringify(manifestJSON)], { type: "application/manifest+json" });
+          const link = document.createElement("link");
+          link.rel = "manifest";
+          link.href = URL.createObjectURL(blob);
+          document.head.appendChild(link);
+        } catch(e) {}
+      }
+
+      function checkIOSInstallSuggestion() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+        if (isIOS && !isStandalone) {
+          document.getElementById("ios-install-banner").style.display = "block";
+        }
+      }
+
+      function getSafeUrl(urlStr) {
+        try {
+          const url = new URL(urlStr, window.location.origin);
+          if (url.protocol === "http:" || url.protocol === "https:") {
+            return url.href;
+          }
+        } catch (e) {}
+        return "about:blank";
+      }
+
+      function isAlphanumericHandle(str) {
+        return /^[A-Za-z0-9_]+$/.test(str);
+      }
+
+      function buildGoogleSearchUrl(query) {
+        return "https://www.google.com/search?q=" + encodeURIComponent(query);
+      }
+
+      function generateLinks(playerName, gamePrefix, searchMode) {
+        const trimmedName = playerName.trim();
+        if (!trimmedName) return [];
+
+        const prefix = gamePrefix.trim() ? gamePrefix.trim() + " " : "";
+        const searchPhrase = prefix + trimmedName;
+
+        return PLATFORMS.map(function(platform) {
+          let targetUrl = "";
+          
+          switch (platform.id) {
+            case "steam":
+              targetUrl = "https://steamcommunity.com/search/users/?text=" + encodeURIComponent(trimmedName);
+              break;
+            case "youtube":
+              targetUrl = buildGoogleSearchUrl(searchPhrase + " site:youtube.com");
+              break;
+            case "twitch":
+              if (searchMode === "smart" && isAlphanumericHandle(trimmedName)) {
+                targetUrl = "https://www.twitch.tv/" + encodeURIComponent(trimmedName.toLowerCase());
+              } else {
+                targetUrl = buildGoogleSearchUrl(searchPhrase + " site:twitch.tv");
+              }
+              break;
+            case "x":
+              if (searchMode === "smart" && isAlphanumericHandle(trimmedName)) {
+                targetUrl = "https://x.com/" + encodeURIComponent(trimmedName);
+              } else {
+                targetUrl = buildGoogleSearchUrl(searchPhrase + " site:x.com OR site:twitter.com");
+              }
+              break;
+            case "tiktok":
+              targetUrl = buildGoogleSearchUrl(searchPhrase + " site:tiktok.com");
+              break;
+            case "5ch":
+              targetUrl = buildGoogleSearchUrl(searchPhrase + " (site:5ch.net OR site:2ch.sc)");
+              break;
+          }
+
+          return {
+            platformName: platform.name,
+            desc: platform.desc,
+            url: getSafeUrl(targetUrl)
+          };
+        });
+      }
+
+      function saveState() {
+        try {
+          appState.gameTitle = document.getElementById("game-title").value;
+          appState.searchMode = document.getElementById("search-mode").value;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        } catch (e) {}
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.gameTitle !== undefined) appState.gameTitle = parsed.gameTitle;
+            if (parsed.searchMode !== undefined) appState.searchMode = parsed.searchMode;
+            if (Array.isArray(parsed.inputs) && parsed.inputs.length > 0) appState.inputs = parsed.inputs;
+            if (Array.isArray(parsed.results)) appState.results = parsed.results;
+          }
+        } catch (e) {}
+      }
+
+      // innerHTMLを排除しDOMベースXSSを防止するセキュアレンダリング
+      function renderInputForm() {
+        const container = document.getElementById("names-container");
+        container.innerHTML = ""; 
+
+        appState.inputs.forEach(function(val, index) {
+          const row = document.createElement("div");
+          row.className = "name-row";
+
+          if (index === 0) {
+            const addBtn = document.createElement("button");
+            addBtn.className = "icon-btn add-btn";
+            addBtn.textContent = "＋";
+            addBtn.disabled = appState.inputs.length >= MAX_SLOTS;
+            addBtn.addEventListener("click", function() {
+              if (appState.inputs.length >= MAX_SLOTS) return;
+              updateInputsFromDOM();
+              appState.inputs.push("");
+              renderInputForm();
+              saveState();
+              const newInputs = document.querySelectorAll("#names-container input[type='text']");
+              if (newInputs.length > 0) newInputs[newInputs.length - 1].focus();
+            });
+            row.appendChild(addBtn);
+          } else {
+            const spacer = document.createElement("div");
+            spacer.className = "spacer";
+            row.appendChild(spacer);
+          }
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.value = val;
+          input.placeholder = "プレイヤー名を入力";
+          input.setAttribute("data-index", index);
+          input.addEventListener("input", function() {
+            updateInputsFromDOM();
+            saveState();
+          });
+          input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") executeSearch();
+          });
+          row.appendChild(input);
+
+          if (index > 0) {
+            const rmBtn = document.createElement("button");
+            rmBtn.className = "icon-btn rm-btn";
+            rmBtn.textContent = "×";
+            rmBtn.addEventListener("click", function() {
+              updateInputsFromDOM();
+              appState.inputs.splice(index, 1);
+              renderInputForm();
+              saveState();
+            });
+            row.appendChild(rmBtn);
+          } else {
+            const spacer2 = document.createElement("div");
+            spacer2.className = "spacer";
+            row.appendChild(spacer2);
+          }
+
+          container.appendChild(row);
+        });
+      }
+
+      function updateInputsFromDOM() {
+        const inputNodes = document.querySelectorAll("#names-container input[type='text']");
+        appState.inputs = Array.from(inputNodes).map(node => node.value);
+      }
+
+      function renderResults() {
+        const container = document.getElementById("results-container");
+        container.innerHTML = "";
+
+        if (appState.results.length === 0) {
+          const emptyMsg = document.createElement("p");
+          emptyMsg.className = "empty-msg";
+          emptyMsg.textContent = "プレイヤー名を入力して「一括検索を実行」をタップしてください。";
+          container.appendChild(emptyMsg);
+          return;
+        }
+
+        appState.results.forEach(function(playerBlock, blockIndex) {
+          const blockDiv = document.createElement("div");
+          blockDiv.className = "player-block";
+
+          const headerDiv = document.createElement("div");
+          headerDiv.className = "player-block-header";
+          
+          const h2 = document.createElement("h2");
+          h2.textContent = playerBlock.playerName; 
+          
+          const delBtn = document.createElement("button");
+          delBtn.className = "delete-block-btn";
+          delBtn.textContent = "履歴削除";
+          delBtn.addEventListener("click", function() {
+            appState.results.splice(blockIndex, 1);
+            renderResults();
+            saveState();
+          });
+
+          headerDiv.appendChild(h2);
+          headerDiv.appendChild(delBtn);
+          blockDiv.appendChild(headerDiv);
+
+          const ul = document.createElement("ul");
+          ul.className = "result-list";
+
+          playerBlock.links.forEach(function(linkItem) {
+            const li = document.createElement("li");
+            li.className = "result-item";
+
+            const a = document.createElement("a");
+            a.className = "card-link";
+            a.href = linkItem.url; 
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+
+            const titleSpan = document.createElement("span");
+            titleSpan.className = "card-title";
+            titleSpan.textContent = linkItem.platformName;
+
+            const hintSpan = document.createElement("span");
+            hintSpan.className = "card-hint";
+            hintSpan.textContent = linkItem.desc;
+
+            a.appendChild(titleSpan);
+            a.appendChild(hintSpan);
+            li.appendChild(a);
+            ul.appendChild(li);
+          });
+
+          blockDiv.appendChild(ul);
+          container.appendChild(blockDiv);
+        });
+      }
+
+      function executeSearch() {
+        updateInputsFromDOM();
+        appState.gameTitle = document.getElementById("game-title").value;
+        appState.searchMode = document.getElementById("search-mode").value;
+        
+        const validNames = appState.inputs.map(n => n.trim()).filter(n => n !== "");
+        if (validNames.length === 0) return;
+
+        appState.results = validNames.map(function(name) {
+          return {
+            playerName: name,
+            links: generateLinks(name, appState.gameTitle, appState.searchMode)
+          };
+        });
+
+        renderResults();
+        saveState();
+
+        document.getElementById("results-container").scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function init() {
+        injectDynamicManifest();
+        checkIOSInstallSuggestion();
+        loadState();
+
+        document.getElementById("game-title").value = appState.gameTitle;
+        document.getElementById("search-mode").value = appState.searchMode;
+        
+        renderInputForm();
+        renderResults();
+
+        document.getElementById("btn-search").addEventListener("click", executeSearch);
+        document.getElementById("game-title").addEventListener("input", saveState);
+        document.getElementById("search-mode").addEventListener("change", saveState);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
