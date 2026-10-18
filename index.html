@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>P.S.D - DBD Player Search</title>
     
-    <!-- Tailwind CSS (開発・プレビュー用CDN) -->
+    <!-- 外部ライブラリ -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts & FontAwesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -20,7 +19,7 @@
         
         body {
             font-family: 'Noto Sans JP', sans-serif;
-            background-color: #0d0d0e; /* 深い闇 */
+            background-color: #0d0d0e;
             color: #e5e7eb;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
@@ -32,39 +31,39 @@
             font-family: 'Cinzel', serif;
         }
 
-        /* 枯れ草の荒野とナイトをイメージした重厚な背景 */
+        /* ⚔️ ナイトの背景画像設定（グラデーションでUIの視認性を確保） */
         .bg-knight-realm {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 30%, rgba(30, 20, 20, 0.8) 0%, rgba(10, 10, 12, 1) 100%);
+            /* bg-knight.jpg をアップロードして反映させます */
+            background: linear-gradient(to bottom, rgba(13, 13, 14, 0.4) 0%, rgba(13, 13, 14, 0.95) 100%), url('bg-knight.jpg') center top/cover no-repeat;
             z-index: -1;
         }
 
-        /* いばらと鉄をイメージした装飾パネル */
+        /* ガラス・鉄の質感パネル */
         .glass-panel {
-            background: rgba(20, 20, 22, 0.85);
-            border: 1px solid rgba(80, 20, 20, 0.4);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255,255,255,0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(20, 20, 22, 0.75);
+            border: 1px solid rgba(138, 10, 10, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: 12px;
         }
 
-        /* 検索ボタン：真紅の薔薇と錆びた鉄のグラデーション */
+        /* 検索ボタン */
         .btn-search {
-            background: linear-gradient(180deg, #5a0505 0%, #200000 100%);
+            background: linear-gradient(180deg, #5a0505 0%, #150000 100%);
             border: 1px solid #8a0a0a;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), inset 0 2px 2px rgba(255, 100, 100, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), inset 0 2px 2px rgba(255, 100, 100, 0.15);
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
             transition: all 0.1s ease-out;
         }
         .btn-search:active {
             transform: scale(0.97);
-            background: linear-gradient(180deg, #3a0000 0%, #100000 100%);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+            background: linear-gradient(180deg, #3a0000 0%, #0d0000 100%);
         }
 
-        /* アコーディオンアニメーション */
+        /* アコーディオン制御 */
         .accordion-content {
             max-height: 0;
             overflow: hidden;
@@ -75,16 +74,21 @@
             transition: max-height 0.5s ease-in-out;
         }
 
-        /* レザー風入力欄 */
+        /* 入力フォーム (iOSズーム防止のため16px以上確保) */
         .input-leather {
             background: rgba(10, 10, 12, 0.9);
             border: 1px solid #2a2a2e;
             color: #f3f4f6;
+            font-size: 16px; 
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
         }
         .input-leather:focus {
             border-color: #8a0a0a;
             outline: none;
+        }
+        
+        input, button, select {
+            touch-action: manipulation;
         }
     </style>
 </head>
@@ -94,37 +98,35 @@
 
     <div class="w-full max-w-md h-full flex flex-col justify-between p-5 z-10 relative">
         
-        <!-- ヘッダー (設定・履歴を右上に集約) -->
-        <header class="flex justify-between items-start pt-4">
+        <!-- ヘッダー -->
+        <header class="flex justify-between items-start pt-2">
             <div>
-                <h1 class="font-gothic text-4xl font-bold text-red-800 tracking-wider drop-shadow-lg">P.S.D</h1>
-                <p class="text-[10px] font-bold tracking-[0.2em] text-zinc-500 mt-1 uppercase">DBD Player Search</p>
+                <h1 class="font-gothic text-4xl font-bold text-red-800 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">P.S.D</h1>
+                <p class="text-[10px] font-bold tracking-[0.2em] text-zinc-400 mt-1 uppercase">DBD Player Search</p>
             </div>
-            <div class="flex space-x-3">
-                <button id="btn-open-history" class="w-10 h-10 rounded-lg glass-panel flex items-center justify-center text-red-500 hover:text-red-400 active:scale-95 transition" aria-label="履歴">
+            <div class="flex space-x-2">
+                <button id="btn-open-history" class="w-11 h-11 rounded-lg glass-panel flex items-center justify-center text-red-500 hover:text-red-400 active:scale-95 transition" aria-label="履歴">
                     <i class="fa-solid fa-scroll text-sm"></i>
                 </button>
-                <button id="btn-open-settings" class="w-10 h-10 rounded-lg glass-panel flex items-center justify-center text-zinc-400 hover:text-zinc-300 active:scale-95 transition" aria-label="設定">
+                <button id="btn-open-settings" class="w-11 h-11 rounded-lg glass-panel flex items-center justify-center text-zinc-400 hover:text-zinc-300 active:scale-95 transition" aria-label="設定">
                     <i class="fa-solid fa-gear text-sm"></i>
                 </button>
             </div>
         </header>
 
-        <!-- メインコンテンツ (ノイズを排除した入力部) -->
+        <!-- メイン: プレイヤー入力 -->
         <main class="w-full flex-grow flex flex-col justify-center space-y-5 my-6">
-            
             <div class="glass-panel p-5 space-y-4">
-                <!-- Javascriptで入力欄が動的生成されます -->
                 <div id="player-inputs" class="space-y-3"></div>
                 
-                <button id="btn-add-player" class="w-full py-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 rounded-lg flex items-center justify-center text-xs text-zinc-400 font-bold transition active:scale-95">
+                <button id="btn-add-player" class="w-full py-2.5 bg-black/60 hover:bg-black/80 border border-zinc-800 rounded-lg flex items-center justify-center text-xs text-zinc-400 font-bold transition active:scale-95">
                     <i class="fa-solid fa-plus mr-1.5"></i> プレイヤーを追加
                 </button>
             </div>
 
-            <!-- 検索ボタン (「検索」のみ) -->
+            <!-- 検索ボタン -->
             <button id="btn-execute-search" class="btn-search w-full py-4 rounded-xl text-xl font-gothic font-bold tracking-widest text-red-100 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-sword text-sm text-red-300"></i> 検索
+                <i class="fa-solid fa-sword text-sm text-red-400"></i> 検索
             </button>
 
             <!-- 検索結果アコーディオン -->
@@ -141,12 +143,10 @@
             </div>
         </main>
 
-        <footer class="pb-2 text-center">
-            <div class="w-12 h-1 bg-zinc-700/50 rounded-full mx-auto"></div>
+        <footer class="pb-2 text-center text-[10px] text-zinc-600">
+            <p>P.S.D &copy; 2026. Secure Local PWA.</p>
         </footer>
     </div>
-
-    <!-- ================= モーダル群 ================= -->
 
     <!-- ⚙️ 設定モーダル -->
     <div id="settings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4">
@@ -160,7 +160,7 @@
             <div class="space-y-4">
                 <div class="space-y-1.5">
                     <label class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">対象ゲームタイトル</label>
-                    <select id="setting-game" class="w-full input-leather rounded-lg p-3 text-sm">
+                    <select id="setting-game" class="w-full input-leather rounded-lg p-3">
                         <option value="dbd">Dead by Daylight (dbd)</option>
                         <option value="apex">Apex Legends (apex)</option>
                         <option value="valorant">VALORANT (valorant)</option>
@@ -169,8 +169,8 @@
                 
                 <div class="space-y-1.5">
                     <label class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">検索ルーティングモード</label>
-                    <select id="setting-routing" class="w-full input-leather rounded-lg p-3 text-sm">
-                        <option value="smart">スマート検索 (プレフィックス + Google)</option>
+                    <select id="setting-routing" class="w-full input-leather rounded-lg p-3">
+                        <option value="smart">スマート検索 (プレフィックス自動付与)</option>
                         <option value="direct">ダイレクトモード (Web直接検索)</option>
                         <option value="google">サーチエンジン限定</option>
                     </select>
@@ -179,7 +179,7 @@
 
             <div class="pt-4 border-t border-zinc-800">
                 <p class="text-[10px] text-zinc-500 mb-2">バグ報告・機能要望はこちら</p>
-                <button id="btn-submit-feedback" class="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded text-xs transition">
+                <button id="btn-submit-feedback" class="w-full py-2 bg-black/50 hover:bg-black text-zinc-300 border border-zinc-800 rounded text-xs transition">
                     開発者へフィードバックを送信
                 </button>
             </div>
@@ -197,8 +197,7 @@
             </div>
             
             <div class="space-y-2">
-                <input type="text" id="history-search" placeholder="名前で検索..." class="w-full input-leather rounded p-2 text-xs">
-                <input type="date" id="history-date" class="w-full input-leather rounded p-2 text-xs">
+                <input type="text" id="history-search" placeholder="名前で検索..." class="w-full input-leather rounded p-2 text-sm">
             </div>
 
             <div id="history-list" class="flex-grow overflow-y-auto space-y-2 pr-1 min-h-[150px]">
@@ -211,19 +210,14 @@
         </div>
     </div>
 
-    <!-- JS Logic (XSS対策・セキュア実装) -->
+    <!-- JavaScript (高セキュリティ・完全DOM連携) -->
     <script>
-        // 状態管理
         let state = {
             players: [''],
             history: [],
-            settings: {
-                game: 'dbd',
-                routing: 'smart'
-            }
+            settings: { game: 'dbd', routing: 'smart' }
         };
 
-        // DOM Elements
         const els = {
             playerInputs: document.getElementById('player-inputs'),
             btnAddPlayer: document.getElementById('btn-add-player'),
@@ -245,18 +239,20 @@
             
             historyList: document.getElementById('history-list'),
             historySearch: document.getElementById('history-search'),
-            historyDate: document.getElementById('history-date'),
             btnClearHistory: document.getElementById('btn-clear-history')
         };
 
-        // 初期化処理
+        function safeSanitize(str) {
+            if (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) return DOMPurify.sanitize(str);
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }[m]));
+        }
+
         function init() {
             loadData();
             bindEvents();
             renderInputs();
         }
 
-        // データ読み込み（型チェック保護付き）
         function loadData() {
             try {
                 const h = localStorage.getItem('psd_history');
@@ -273,32 +269,25 @@
                 els.settingGame.value = state.settings.game;
                 els.settingRouting.value = state.settings.routing;
             } catch (e) {
-                console.error("Local storage read error", e);
+                console.warn("Storage load error", e);
             }
         }
 
-        // イベントバインディング（インラインハンドラ排除）
         function bindEvents() {
             els.btnAddPlayer.addEventListener('click', addPlayer);
             els.btnSearch.addEventListener('click', executeSearch);
             els.btnCloseResults.addEventListener('click', () => els.accordion.classList.remove('open'));
             
-            els.btnOpenSettings.addEventListener('click', () => els.modalSettings.classList.remove('hidden', 'flex'));
-            els.btnOpenSettings.addEventListener('click', () => els.modalSettings.classList.add('flex'));
+            els.btnOpenSettings.addEventListener('click', () => { els.modalSettings.classList.remove('hidden'); els.modalSettings.classList.add('flex'); });
             els.btnCloseSettings.addEventListener('click', () => els.modalSettings.classList.add('hidden'));
             
-            els.btnOpenHistory.addEventListener('click', () => {
-                els.modalHistory.classList.remove('hidden');
-                els.modalHistory.classList.add('flex');
-                renderHistory();
-            });
+            els.btnOpenHistory.addEventListener('click', () => { els.modalHistory.classList.remove('hidden'); els.modalHistory.classList.add('flex'); renderHistory(); });
             els.btnCloseHistory.addEventListener('click', () => els.modalHistory.classList.add('hidden'));
 
             els.settingGame.addEventListener('change', (e) => saveSetting('game', e.target.value));
             els.settingRouting.addEventListener('change', (e) => saveSetting('routing', e.target.value));
             
             els.historySearch.addEventListener('input', renderHistory);
-            els.historyDate.addEventListener('change', renderHistory);
             els.btnClearHistory.addEventListener('click', clearHistory);
             
             els.btnFeedback.addEventListener('click', () => {
@@ -306,7 +295,7 @@
             });
         }
 
-        // 安全なDOM生成（textContentを徹底しXSSを根本から防止）
+        // textContentを使用した安全なDOM構築[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)
         function renderInputs() {
             els.playerInputs.innerHTML = '';
             state.players.forEach((player, index) => {
@@ -317,14 +306,14 @@
                 input.type = 'text';
                 input.value = player;
                 input.placeholder = 'プレイヤー名を入力';
-                input.className = 'w-full h-11 rounded-lg input-leather px-4 text-sm font-medium';
+                input.className = 'w-full h-11 rounded-lg input-leather px-4';
                 input.addEventListener('input', (e) => state.players[index] = e.target.value);
 
                 row.appendChild(input);
 
                 if (state.players.length > 1) {
                     const btnDel = document.createElement('button');
-                    btnDel.className = 'w-11 h-11 flex-shrink-0 bg-red-950/30 rounded-lg border border-red-900/50 text-red-500 hover:bg-red-900/50 transition';
+                    btnDel.className = 'w-11 h-11 flex-shrink-0 bg-black/40 rounded-lg border border-red-900/50 text-red-500 hover:bg-red-900/30 transition';
                     btnDel.innerHTML = '<i class="fa-solid fa-minus"></i>';
                     btnDel.addEventListener('click', () => {
                         state.players.splice(index, 1);
@@ -332,7 +321,6 @@
                     });
                     row.appendChild(btnDel);
                 }
-
                 els.playerInputs.appendChild(row);
             });
         }
@@ -345,12 +333,9 @@
 
         function saveSetting(key, value) {
             state.settings[key] = value;
-            try {
-                localStorage.setItem(`psd_${key}`, value);
-            } catch (e) {}
+            try { localStorage.setItem(`psd_${key}`, value); } catch (e) {}
         }
 
-        // 検索処理
         function executeSearch() {
             const targets = state.players.map(p => p.trim()).filter(p => p !== '');
             if (targets.length === 0) return alert('プレイヤー名を入力してください。');
@@ -361,22 +346,22 @@
             targets.forEach(player => {
                 addHistory(player, today);
 
-                // ルーティング適用
                 let query = '';
                 const { game, routing } = state.settings;
+                
+                // 動的ルーティングエンジン
                 if (routing === 'smart') query = `${game} ${player}`;
                 else if (routing === 'direct') query = player;
-                else query = `${player}`;
+                else query = `${player} 検索`;
 
                 const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 
-                // 結果DOMの安全な構築
                 const wrap = document.createElement('div');
-                wrap.className = 'p-3 bg-black/40 rounded-lg border border-zinc-800 flex justify-between items-center';
+                wrap.className = 'p-3 bg-black/60 rounded-lg border border-zinc-800 flex justify-between items-center';
                 
                 const nameCol = document.createElement('div');
                 const badge = document.createElement('span');
-                badge.className = 'text-[9px] bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded mr-2 font-bold';
+                badge.className = 'text-[9px] bg-red-950/50 text-zinc-300 px-1.5 py-0.5 rounded mr-2 font-bold';
                 badge.textContent = game.toUpperCase();
                 
                 const nameTxt = document.createElement('span');
@@ -390,7 +375,7 @@
                 link.href = url;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                link.className = 'text-[10px] font-bold text-red-500 bg-red-950/30 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50 transition';
+                link.className = 'text-[10px] font-bold text-red-400 bg-red-950/30 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50 transition';
                 link.innerHTML = '追跡 <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>';
 
                 wrap.appendChild(nameCol);
@@ -402,7 +387,6 @@
             setTimeout(() => els.accordion.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
         }
 
-        // 履歴管理
         function addHistory(name, date) {
             state.history = state.history.filter(h => !(h.name === name && h.date === date));
             state.history.unshift({ id: Date.now() + Math.random(), name, date });
@@ -413,13 +397,10 @@
         function renderHistory() {
             els.historyList.innerHTML = '';
             const search = els.historySearch.value.toLowerCase();
-            const fDate = els.historyDate.value ? new Date(els.historyDate.value).toLocaleDateString('ja-JP') : '';
 
             const filtered = state.history.filter(h => {
                 if (!h || !h.name) return false;
-                const matchName = h.name.toLowerCase().includes(search);
-                const matchDate = fDate ? h.date === fDate : true;
-                return matchName && matchDate;
+                return h.name.toLowerCase().includes(search);
             });
 
             if (filtered.length === 0) {
@@ -429,7 +410,7 @@
 
             filtered.forEach(h => {
                 const wrap = document.createElement('div');
-                wrap.className = 'flex justify-between items-center p-2.5 bg-zinc-900/50 rounded border border-zinc-800';
+                wrap.className = 'flex justify-between items-center p-2.5 bg-black/50 rounded border border-zinc-800';
                 
                 const info = document.createElement('div');
                 info.className = 'cursor-pointer flex-grow';
@@ -441,17 +422,18 @@
                 });
 
                 const n = document.createElement('div');
-                n.className = 'text-sm font-medium text-zinc-200';
-                n.textContent = h.name;
+                n.className = 'text-sm font-bold text-zinc-200';
+                n.textContent = safeSanitize(h.name);
+                
                 const d = document.createElement('div');
-                d.className = 'text-[9px] text-zinc-500';
-                d.textContent = h.date;
+                d.className = 'text-[9px] text-zinc-500 mt-0.5';
+                d.textContent = safeSanitize(h.date);
 
                 info.appendChild(n);
                 info.appendChild(d);
 
                 const del = document.createElement('button');
-                del.className = 'text-zinc-600 hover:text-red-500 p-2';
+                del.className = 'text-zinc-600 hover:text-red-500 p-2 ml-2';
                 del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                 del.addEventListener('click', () => {
                     state.history = state.history.filter(item => item.id !== h.id);
@@ -472,8 +454,8 @@
             renderHistory();
         }
 
-        // 起動
-        init();
+        // DOM構築完了後に実行
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
