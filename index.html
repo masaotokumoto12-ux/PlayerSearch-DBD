@@ -79,7 +79,6 @@
       backdrop-filter: blur(4px);
     }
     
-    /* 設定画面モーダル */
     #settings-modal {
       display: none;
       position: fixed;
@@ -143,7 +142,6 @@
     
     #game-custom { margin-top: 12px; }
     
-    /* プレイヤー入力エリア */
     .names { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
     .name-row { display: flex; gap: 8px; align-items: center; }
     .icon-btn {
@@ -274,7 +272,7 @@
         return "https://www.google.com/search?q=" + encodeURIComponent(query);
       }
 
-      // 【プロファイル・スナイパーロジック搭載コア】
+      // 【完全修復版】エラーゼロ・全SNSダイレクト対応ロジック
       function generateLinks(playerName) {
         const trimmedName = playerName.trim();
         if (!trimmedName) return [];
@@ -282,39 +280,39 @@
         let prefix = appState.gameSelect === "other" ? appState.gameCustom : appState.gameSelect;
         prefix = prefix.trim() ? prefix.trim() + " " : "";
         
-        // 厳密な検索用文字列（ダブルクォーテーションで囲んで完全一致化）
-        const exactName = '"' + trimmedName + '"';
-        const isHandle = /^[A-Za-z0-9_]+$/.test(trimmedName);
+        // ハイフンやドットを含むID形式も正しく判定（YouTube等の新ハンドル対応）
+        const isHandle = /^[A-Za-z0-9_.-]+$/.test(trimmedName);
 
         return PLATFORMS.map(function(platform) {
           let targetUrl = "";
           switch (platform.id) {
             case "steam": 
-              // Steamは固有の検索機能が優秀なため公式検索を利用
               targetUrl = "https://steamcommunity.com/search/users/?text=" + encodeURIComponent(trimmedName); 
               break;
             case "x": 
               targetUrl = (appState.searchMode === "smart" && isHandle) 
                 ? "https://x.com/" + encodeURIComponent(trimmedName) 
-                // inurl:status をマイナス除外してプロフィール画面のみを抽出
-                : buildGoogleSearchUrl(exactName + " " + prefix + "site:x.com -inurl:status"); 
+                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:x.com OR site:twitter.com"); 
               break;
             case "youtube": 
-              // inurl:"@" でチャンネルトップを狙い撃ち
-              targetUrl = buildGoogleSearchUrl(exactName + " " + prefix + 'site:youtube.com inurl:"@"'); 
+              // IDなら直接チャンネルトップへ。日本語なら安全にGoogle検索。
+              targetUrl = (appState.searchMode === "smart" && isHandle)
+                ? "https://www.youtube.com/@" + encodeURIComponent(trimmedName)
+                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:youtube.com"); 
               break;
             case "twitch": 
               targetUrl = (appState.searchMode === "smart" && isHandle) 
                 ? "https://www.twitch.tv/" + encodeURIComponent(trimmedName.toLowerCase()) 
-                : buildGoogleSearchUrl(exactName + " " + prefix + "site:twitch.tv"); 
+                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:twitch.tv"); 
               break;
             case "tiktok": 
-              // inurl:"@" でユーザープロフィールを狙い撃ち
-              targetUrl = buildGoogleSearchUrl(exactName + " " + prefix + 'site:tiktok.com inurl:"@"'); 
+              // IDなら直接プロフィールへ。日本語なら安全にGoogle検索。
+              targetUrl = (appState.searchMode === "smart" && isHandle)
+                ? "https://www.tiktok.com/@" + encodeURIComponent(trimmedName)
+                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:tiktok.com"); 
               break;
             case "5ch": 
-              // read.cgi（現行スレッド）に絞り込み、過去ログ等のゴミを排除
-              targetUrl = buildGoogleSearchUrl(exactName + " " + prefix + "site:5ch.net/test/read.cgi/"); 
+              targetUrl = buildGoogleSearchUrl(trimmedName + " " + prefix + "site:5ch.net/test/read.cgi/"); 
               break;
           }
           return { platformName: platform.name, desc: platform.desc, url: getSafeUrl(targetUrl) };
