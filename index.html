@@ -1,461 +1,471 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>P.S.D - DBD Player Search</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <title>Player Check Pro</title>
+  
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none';" />
+  
+  <meta name="theme-color" content="#0c0d0f" />
+  <meta name="color-scheme" content="dark" />
+  
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="D.P.S" />
+
+  <link rel="apple-touch-icon" href="icon.png" />
+  <link rel="icon" type="image/png" href="icon.png" />
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c0d0f;
+      --surface: rgba(22, 24, 28, 0.85);
+      --border: #2a2e35;
+      --fg: #e8eaed;
+      --muted: #9aa0a6;
+      --accent: #8ab4f8;
+      --danger: #f28b82;
+      --radius: 12px;
+      --tap-target: 48px; 
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      min-height: 100dvh;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: var(--fg);
+      line-height: 1.5;
+      background-color: var(--bg);
+      background-image: linear-gradient(rgba(12, 13, 15, 0.7), rgba(12, 13, 15, 0.95)), url('bg-knight.jpg');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+    }
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+      color: var(--accent);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .settings-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      width: var(--tap-target);
+      height: var(--tap-target);
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
     
-    <!-- 外部ライブラリ -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" async defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    /* 設定画面モーダル */
+    #settings-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg);
+      z-index: 100;
+      padding: env(safe-area-inset-top) 16px 0;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .modal-header h2 { margin: 0; font-size: 1.2rem; }
+    .close-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
     
-    <style>
-        :root {
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
-        
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: #0d0d0e;
-            color: #e5e7eb;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-            padding-top: var(--safe-top);
-            padding-bottom: var(--safe-bottom);
-        }
-
-        .font-gothic {
-            font-family: 'Cinzel', serif;
-        }
-
-        /* ⚔️ ナイトの背景画像設定（グラデーションでUIの視認性を確保） */
-        .bg-knight-realm {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            /* bg-knight.jpg をアップロードして反映させます */
-            background: linear-gradient(to bottom, rgba(13, 13, 14, 0.4) 0%, rgba(13, 13, 14, 0.95) 100%), url('bg-knight.jpg') center top/cover no-repeat;
-            z-index: -1;
-        }
-
-        /* ガラス・鉄の質感パネル */
-        .glass-panel {
-            background: rgba(20, 20, 22, 0.75);
-            border: 1px solid rgba(138, 10, 10, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), inset 0 1px 1px rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px;
-        }
-
-        /* 検索ボタン */
-        .btn-search {
-            background: linear-gradient(180deg, #5a0505 0%, #150000 100%);
-            border: 1px solid #8a0a0a;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), inset 0 2px 2px rgba(255, 100, 100, 0.15);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-            transition: all 0.1s ease-out;
-        }
-        .btn-search:active {
-            transform: scale(0.97);
-            background: linear-gradient(180deg, #3a0000 0%, #0d0000 100%);
-        }
-
-        /* アコーディオン制御 */
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
-        }
-        .accordion-content.open {
-            max-height: 600px;
-            transition: max-height 0.5s ease-in-out;
-        }
-
-        /* 入力フォーム (iOSズーム防止のため16px以上確保) */
-        .input-leather {
-            background: rgba(10, 10, 12, 0.9);
-            border: 1px solid #2a2a2e;
-            color: #f3f4f6;
-            font-size: 16px; 
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
-        }
-        .input-leather:focus {
-            border-color: #8a0a0a;
-            outline: none;
-        }
-        
-        input, button, select {
-            touch-action: manipulation;
-        }
-    </style>
+    .config-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .config-row { margin-bottom: 16px; }
+    .config-row:last-child { margin-bottom: 0; }
+    
+    label.field-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+    
+    select.ui-select, input[type="text"] {
+      width: 100%;
+      min-height: var(--tap-target);
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(0, 0, 0, 0.6);
+      color: var(--fg);
+      font-size: 16px;
+      outline: none;
+      backdrop-filter: blur(4px);
+    }
+    select.ui-select { appearance: none; cursor: pointer; }
+    input[type="text"]:focus, select.ui-select:focus { border-color: var(--accent); }
+    
+    #game-custom { margin-top: 12px; }
+    
+    /* プレイヤー入力エリア */
+    .names { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .name-row { display: flex; gap: 8px; align-items: center; }
+    .icon-btn {
+      min-height: var(--tap-target); min-width: var(--tap-target);
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius); font-size: 1.25rem; font-weight: bold; flex-shrink: 0;
+      backdrop-filter: blur(4px);
+    }
+    .add-btn { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
+    .rm-btn { background: rgba(0,0,0,0.4); color: var(--danger); border: 1px solid var(--border); }
+    
+    button.primary-btn {
+      width: 100%; min-height: 56px; border: none; border-radius: var(--radius);
+      background: var(--accent); color: #000; font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 32px; box-shadow: 0 4px 12px rgba(138, 180, 248, 0.2);
+    }
+    
+    .player-block { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; border: 1px solid var(--border); backdrop-filter: blur(8px); }
+    .player-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .player-block-header h2 { font-size: 1.1rem; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    .delete-block-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: var(--danger); font-size: 0.9rem; padding: 8px 12px; border-radius: 6px; }
+    
+    ul.result-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    li.result-item { display: flex; align-items: center; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid transparent; transition: border-color 0.2s; }
+    li.result-item:active { border-color: var(--accent); }
+    a.card-link { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; text-decoration: none; color: var(--fg); min-height: var(--tap-target); }
+    .card-title { font-weight: 600; font-size: 0.95rem; }
+    .card-hint { font-size: 0.8rem; color: var(--muted); }
+    .empty-msg { color: var(--muted); text-align: center; font-size: 0.95rem; padding: 24px 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+    .spacer { min-width: var(--tap-target); flex-shrink: 0; }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center relative">
+<body>
+  
+  <div id="settings-modal">
+    <div class="modal-header">
+      <h2>各種設定・詳細</h2>
+      <button class="close-btn" id="close-settings">完了</button>
+    </div>
 
-    <div class="bg-knight-realm"></div>
+    <div class="config-block">
+      <div class="config-row">
+        <label class="field-label">対象ゲームタイトル</label>
+        <select id="game-select" class="ui-select">
+          <option value="dbd">Dead by Daylight (DBD)</option>
+          <option value="apex">Apex Legends</option>
+          <option value="valorant">VALORANT</option>
+          <option value="other">その他（自由入力）</option>
+        </select>
+        <input type="text" id="game-custom" placeholder="ゲーム名を入力..." style="display:none;" autocomplete="off" />
+      </div>
+      <div class="config-row">
+        <label class="field-label">検索ルーティングモード</label>
+        <select id="search-mode" class="ui-select">
+          <option value="smart">スマート検索（最速自動判別）</option>
+          <option value="force-google">すべてGoogle検索を強制</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-    <div class="w-full max-w-md h-full flex flex-col justify-between p-5 z-10 relative">
+  <main>
+    <header>
+      <h1>P.S.D</h1>
+      <button class="settings-btn" id="open-settings" title="設定">⚙️</button>
+    </header>
+
+    <label class="field-label">プレイヤー名入力</label>
+    <div class="names" id="names-container"></div>
+
+    <button type="button" id="btn-search" class="primary-btn">検索</button>
+    <div id="results-container"></div>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const MAX_SLOTS = 4;
+      const STORAGE_KEY = "player-check-pro-v2";
+      
+      const PLATFORMS = [
+        { id: "steam", name: "Steam", desc: "コミュニティプロフィール" },
+        { id: "x", name: "X (Twitter)", desc: "アカウント直撃" },
+        { id: "youtube", name: "YouTube", desc: "チャンネルホーム" },
+        { id: "twitch", name: "Twitch", desc: "配信チャンネル" },
+        { id: "tiktok", name: "TikTok", desc: "ユーザープロフィール" },
+        { id: "5ch", name: "5ちゃんねる", desc: "現行スレッド" }
+      ];
+
+      let appState = {
+        gameSelect: "dbd",
+        gameCustom: "",
+        searchMode: "smart",
+        inputs: [""],
+        results: []
+      };
+
+      function injectDynamicManifest() {
+        const manifestJSON = {
+          name: "P.S.D",
+          short_name: "P.S.D",
+          display: "standalone",
+          background_color: "#0c0d0f",
+          theme_color: "#0c0d0f",
+          icons: [
+            { src: "icon.png", sizes: "192x192 512x512", type: "image/png" }
+          ]
+        };
+        try {
+          const blob = new Blob([JSON.stringify(manifestJSON)], { type: "application/manifest+json" });
+          const link = document.createElement("link");
+          link.rel = "manifest";
+          link.href = URL.createObjectURL(blob);
+          document.head.appendChild(link);
+        } catch(e) {}
+      }
+
+      function getSafeUrl(urlStr) {
+        try {
+          const url = new URL(urlStr, window.location.origin);
+          if (url.protocol === "http:" || url.protocol === "https:") return url.href;
+        } catch (e) {}
+        return "about:blank";
+      }
+
+      function buildGoogleSearchUrl(query) {
+        return "https://www.google.com/search?q=" + encodeURIComponent(query);
+      }
+
+      // 【プロファイル・スナイパーロジック搭載コア】
+      function generateLinks(playerName) {
+        const trimmedName = playerName.trim();
+        if (!trimmedName) return [];
+
+        let prefix = appState.gameSelect === "other" ? appState.gameCustom : appState.gameSelect;
+        prefix = prefix.trim() ? prefix.trim() + " " : "";
         
-        <!-- ヘッダー -->
-        <header class="flex justify-between items-start pt-2">
-            <div>
-                <h1 class="font-gothic text-4xl font-bold text-red-800 tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">P.S.D</h1>
-                <p class="text-[10px] font-bold tracking-[0.2em] text-zinc-400 mt-1 uppercase">DBD Player Search</p>
-            </div>
-            <div class="flex space-x-2">
-                <button id="btn-open-history" class="w-11 h-11 rounded-lg glass-panel flex items-center justify-center text-red-500 hover:text-red-400 active:scale-95 transition" aria-label="履歴">
-                    <i class="fa-solid fa-scroll text-sm"></i>
-                </button>
-                <button id="btn-open-settings" class="w-11 h-11 rounded-lg glass-panel flex items-center justify-center text-zinc-400 hover:text-zinc-300 active:scale-95 transition" aria-label="設定">
-                    <i class="fa-solid fa-gear text-sm"></i>
-                </button>
-            </div>
-        </header>
+        // 厳密な検索用文字列（ダブルクォーテーションで囲んで完全一致化）
+        const exactName = '"' + trimmedName + '"';
+        const isHandle = /^[A-Za-z0-9_]+$/.test(trimmedName);
 
-        <!-- メイン: プレイヤー入力 -->
-        <main class="w-full flex-grow flex flex-col justify-center space-y-5 my-6">
-            <div class="glass-panel p-5 space-y-4">
-                <div id="player-inputs" class="space-y-3"></div>
-                
-                <button id="btn-add-player" class="w-full py-2.5 bg-black/60 hover:bg-black/80 border border-zinc-800 rounded-lg flex items-center justify-center text-xs text-zinc-400 font-bold transition active:scale-95">
-                    <i class="fa-solid fa-plus mr-1.5"></i> プレイヤーを追加
-                </button>
-            </div>
+        return PLATFORMS.map(function(platform) {
+          let targetUrl = "";
+          switch (platform.id) {
+            case "steam": 
+              // Steamは固有の検索機能が優秀なため公式検索を利用
+              targetUrl = "https://steamcommunity.com/search/users/?text=" + encodeURIComponent(trimmedName); 
+              break;
+            case "x": 
+              targetUrl = (appState.searchMode === "smart" && isHandle) 
+                ? "https://x.com/" + encodeURIComponent(trimmedName) 
+                // inurl:status をマイナス除外してプロフィール画面のみを抽出
+                : buildGoogleSearchUrl(exactName + " " + prefix + "site:x.com -inurl:status"); 
+              break;
+            case "youtube": 
+              // inurl:"@" でチャンネルトップを狙い撃ち
+              targetUrl = buildGoogleSearchUrl(exactName + " " + prefix + 'site:youtube.com inurl:"@"'); 
+              break;
+            case "twitch": 
+              targetUrl = (appState.searchMode === "smart" && isHandle) 
+                ? "https://www.twitch.tv/" + encodeURIComponent(trimmedName.toLowerCase()) 
+                : buildGoogleSearchUrl(exactName + " " + prefix + "site:twitch.tv"); 
+              break;
+            case "tiktok": 
+              // inurl:"@" でユーザープロフィールを狙い撃ち
+              targetUrl = buildGoogleSearchUrl(exactName + " " + prefix + 'site:tiktok.com inurl:"@"'); 
+              break;
+            case "5ch": 
+              // read.cgi（現行スレッド）に絞り込み、過去ログ等のゴミを排除
+              targetUrl = buildGoogleSearchUrl(exactName + " " + prefix + "site:5ch.net/test/read.cgi/"); 
+              break;
+          }
+          return { platformName: platform.name, desc: platform.desc, url: getSafeUrl(targetUrl) };
+        });
+      }
 
-            <!-- 検索ボタン -->
-            <button id="btn-execute-search" class="btn-search w-full py-4 rounded-xl text-xl font-gothic font-bold tracking-widest text-red-100 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-sword text-sm text-red-400"></i> 検索
-            </button>
+      function saveState() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch (e) {}
+      }
 
-            <!-- 検索結果アコーディオン -->
-            <div id="result-accordion" class="accordion-content">
-                <div class="glass-panel p-4 rounded-xl space-y-3 mt-2">
-                    <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-                        <h3 class="text-xs font-bold text-red-600 flex items-center gap-2">
-                            <i class="fa-solid fa-link"></i> 検索結果
-                        </h3>
-                        <button id="btn-close-results" class="text-xs text-zinc-500 hover:text-zinc-300">閉じる</button>
-                    </div>
-                    <div id="search-results-output" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-                </div>
-            </div>
-        </main>
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed.gameSelect) appState.gameSelect = parsed.gameSelect;
+            if (parsed.gameCustom !== undefined) appState.gameCustom = parsed.gameCustom;
+            if (parsed.searchMode) appState.searchMode = parsed.searchMode;
+            if (Array.isArray(parsed.inputs) && parsed.inputs.length > 0) appState.inputs = parsed.inputs;
+            if (Array.isArray(parsed.results)) appState.results = parsed.results;
+          }
+        } catch (e) {}
+      }
 
-        <footer class="pb-2 text-center text-[10px] text-zinc-600">
-            <p>P.S.D &copy; 2026. Secure Local PWA.</p>
-        </footer>
-    </div>
+      function syncSettingsUI() {
+        const selectEl = document.getElementById("game-select");
+        const customEl = document.getElementById("game-custom");
+        
+        selectEl.value = appState.gameSelect;
+        customEl.value = appState.gameCustom;
+        customEl.style.display = appState.gameSelect === "other" ? "block" : "none";
+        document.getElementById("search-mode").value = appState.searchMode;
+      }
 
-    <!-- ⚙️ 設定モーダル -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4">
-        <div class="w-full max-w-sm glass-panel p-6 space-y-5 relative">
-            <button id="btn-close-settings" class="absolute top-4 right-4 text-zinc-500 hover:text-white p-2"><i class="fa-solid fa-xmark"></i></button>
-            
-            <h2 class="font-gothic text-lg font-bold text-zinc-200 border-b border-zinc-800 pb-2 flex items-center gap-2">
-                <i class="fa-solid fa-gear text-red-700"></i> Settings
-            </h2>
-            
-            <div class="space-y-4">
-                <div class="space-y-1.5">
-                    <label class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">対象ゲームタイトル</label>
-                    <select id="setting-game" class="w-full input-leather rounded-lg p-3">
-                        <option value="dbd">Dead by Daylight (dbd)</option>
-                        <option value="apex">Apex Legends (apex)</option>
-                        <option value="valorant">VALORANT (valorant)</option>
-                    </select>
-                </div>
-                
-                <div class="space-y-1.5">
-                    <label class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">検索ルーティングモード</label>
-                    <select id="setting-routing" class="w-full input-leather rounded-lg p-3">
-                        <option value="smart">スマート検索 (プレフィックス自動付与)</option>
-                        <option value="direct">ダイレクトモード (Web直接検索)</option>
-                        <option value="google">サーチエンジン限定</option>
-                    </select>
-                </div>
-            </div>
+      function handleSettingsChange() {
+        appState.gameSelect = document.getElementById("game-select").value;
+        appState.gameCustom = document.getElementById("game-custom").value;
+        appState.searchMode = document.getElementById("search-mode").value;
+        document.getElementById("game-custom").style.display = appState.gameSelect === "other" ? "block" : "none";
+        saveState();
+      }
 
-            <div class="pt-4 border-t border-zinc-800">
-                <p class="text-[10px] text-zinc-500 mb-2">バグ報告・機能要望はこちら</p>
-                <button id="btn-submit-feedback" class="w-full py-2 bg-black/50 hover:bg-black text-zinc-300 border border-zinc-800 rounded text-xs transition">
-                    開発者へフィードバックを送信
-                </button>
-            </div>
-        </div>
-    </div>
+      function renderInputForm() {
+        const container = document.getElementById("names-container");
+        container.innerHTML = ""; 
 
-    <!-- 📜 履歴モーダル -->
-    <div id="history-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4">
-        <div class="w-full max-w-sm glass-panel p-6 space-y-4 relative flex flex-col max-h-[85vh]">
-            <div class="flex justify-between items-center border-b border-zinc-800 pb-2">
-                <h2 class="font-gothic text-lg font-bold text-zinc-200 flex items-center gap-2">
-                    <i class="fa-solid fa-scroll text-red-700"></i> History
-                </h2>
-                <button id="btn-close-history" class="text-zinc-500 hover:text-white p-2"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <div class="space-y-2">
-                <input type="text" id="history-search" placeholder="名前で検索..." class="w-full input-leather rounded p-2 text-sm">
-            </div>
+        appState.inputs.forEach(function(val, index) {
+          const row = document.createElement("div");
+          row.className = "name-row";
 
-            <div id="history-list" class="flex-grow overflow-y-auto space-y-2 pr-1 min-h-[150px]">
-                <!-- 履歴動的生成 -->
-            </div>
-            
-            <button id="btn-clear-history" class="w-full py-2.5 border border-red-900/50 bg-red-950/20 text-red-500 rounded-lg text-xs font-bold hover:bg-red-900/40 transition">
-                全履歴を削除
-            </button>
-        </div>
-    </div>
-
-    <!-- JavaScript (高セキュリティ・完全DOM連携) -->
-    <script>
-        let state = {
-            players: [''],
-            history: [],
-            settings: { game: 'dbd', routing: 'smart' }
-        };
-
-        const els = {
-            playerInputs: document.getElementById('player-inputs'),
-            btnAddPlayer: document.getElementById('btn-add-player'),
-            btnSearch: document.getElementById('btn-execute-search'),
-            accordion: document.getElementById('result-accordion'),
-            resultsOutput: document.getElementById('search-results-output'),
-            btnCloseResults: document.getElementById('btn-close-results'),
-            
-            modalSettings: document.getElementById('settings-modal'),
-            modalHistory: document.getElementById('history-modal'),
-            btnOpenSettings: document.getElementById('btn-open-settings'),
-            btnCloseSettings: document.getElementById('btn-close-settings'),
-            btnOpenHistory: document.getElementById('btn-open-history'),
-            btnCloseHistory: document.getElementById('btn-close-history'),
-            
-            settingGame: document.getElementById('setting-game'),
-            settingRouting: document.getElementById('setting-routing'),
-            btnFeedback: document.getElementById('btn-submit-feedback'),
-            
-            historyList: document.getElementById('history-list'),
-            historySearch: document.getElementById('history-search'),
-            btnClearHistory: document.getElementById('btn-clear-history')
-        };
-
-        function safeSanitize(str) {
-            if (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) return DOMPurify.sanitize(str);
-            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' }[m]));
-        }
-
-        function init() {
-            loadData();
-            bindEvents();
-            renderInputs();
-        }
-
-        function loadData() {
-            try {
-                const h = localStorage.getItem('psd_history');
-                if (h) {
-                    const parsed = JSON.parse(h);
-                    if (Array.isArray(parsed)) state.history = parsed;
-                }
-                const g = localStorage.getItem('psd_game');
-                if (g) state.settings.game = g;
-                
-                const r = localStorage.getItem('psd_routing');
-                if (r) state.settings.routing = r;
-
-                els.settingGame.value = state.settings.game;
-                els.settingRouting.value = state.settings.routing;
-            } catch (e) {
-                console.warn("Storage load error", e);
-            }
-        }
-
-        function bindEvents() {
-            els.btnAddPlayer.addEventListener('click', addPlayer);
-            els.btnSearch.addEventListener('click', executeSearch);
-            els.btnCloseResults.addEventListener('click', () => els.accordion.classList.remove('open'));
-            
-            els.btnOpenSettings.addEventListener('click', () => { els.modalSettings.classList.remove('hidden'); els.modalSettings.classList.add('flex'); });
-            els.btnCloseSettings.addEventListener('click', () => els.modalSettings.classList.add('hidden'));
-            
-            els.btnOpenHistory.addEventListener('click', () => { els.modalHistory.classList.remove('hidden'); els.modalHistory.classList.add('flex'); renderHistory(); });
-            els.btnCloseHistory.addEventListener('click', () => els.modalHistory.classList.add('hidden'));
-
-            els.settingGame.addEventListener('change', (e) => saveSetting('game', e.target.value));
-            els.settingRouting.addEventListener('change', (e) => saveSetting('routing', e.target.value));
-            
-            els.historySearch.addEventListener('input', renderHistory);
-            els.btnClearHistory.addEventListener('click', clearHistory);
-            
-            els.btnFeedback.addEventListener('click', () => {
-                window.location.href = `mailto:support@example.com?subject=${encodeURIComponent('[P.S.D] フィードバック')}`;
+          if (index === 0) {
+            const addBtn = document.createElement("button");
+            addBtn.className = "icon-btn add-btn";
+            addBtn.textContent = "＋";
+            addBtn.disabled = appState.inputs.length >= MAX_SLOTS;
+            addBtn.addEventListener("click", function() {
+              if (appState.inputs.length >= MAX_SLOTS) return;
+              updateInputs(); appState.inputs.push(""); renderInputForm(); saveState();
             });
-        }
+            row.appendChild(addBtn);
+          } else {
+            const sp = document.createElement("div"); sp.className = "spacer"; row.appendChild(sp);
+          }
 
-        // textContentを使用した安全なDOM構築[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)
-        function renderInputs() {
-            els.playerInputs.innerHTML = '';
-            state.players.forEach((player, index) => {
-                const row = document.createElement('div');
-                row.className = 'flex items-center space-x-2';
+          const input = document.createElement("input");
+          input.type = "text"; input.value = val; input.placeholder = "プレイヤー名を入力";
+          input.addEventListener("input", function() { updateInputs(); saveState(); });
+          row.appendChild(input);
 
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = player;
-                input.placeholder = 'プレイヤー名を入力';
-                input.className = 'w-full h-11 rounded-lg input-leather px-4';
-                input.addEventListener('input', (e) => state.players[index] = e.target.value);
-
-                row.appendChild(input);
-
-                if (state.players.length > 1) {
-                    const btnDel = document.createElement('button');
-                    btnDel.className = 'w-11 h-11 flex-shrink-0 bg-black/40 rounded-lg border border-red-900/50 text-red-500 hover:bg-red-900/30 transition';
-                    btnDel.innerHTML = '<i class="fa-solid fa-minus"></i>';
-                    btnDel.addEventListener('click', () => {
-                        state.players.splice(index, 1);
-                        renderInputs();
-                    });
-                    row.appendChild(btnDel);
-                }
-                els.playerInputs.appendChild(row);
+          if (index > 0) {
+            const rmBtn = document.createElement("button");
+            rmBtn.className = "icon-btn rm-btn"; rmBtn.textContent = "×";
+            rmBtn.addEventListener("click", function() {
+              updateInputs(); appState.inputs.splice(index, 1); renderInputForm(); saveState();
             });
+            row.appendChild(rmBtn);
+          } else {
+            const sp2 = document.createElement("div"); sp2.className = "spacer"; row.appendChild(sp2);
+          }
+          container.appendChild(row);
+        });
+      }
+
+      function updateInputs() {
+        appState.inputs = Array.from(document.querySelectorAll("#names-container input[type='text']")).map(n => n.value);
+      }
+
+      function renderResults() {
+        const container = document.getElementById("results-container");
+        container.innerHTML = "";
+        if (appState.results.length === 0) {
+          const p = document.createElement("p"); p.className = "empty-msg"; p.textContent = "プレイヤー名を入力して検索をタップしてください。";
+          container.appendChild(p); return;
         }
 
-        function addPlayer() {
-            if (state.players.length >= 10) return;
-            state.players.push('');
-            renderInputs();
-        }
+        appState.results.forEach(function(block, bi) {
+          const bDiv = document.createElement("div"); bDiv.className = "player-block";
+          const hDiv = document.createElement("div"); hDiv.className = "player-block-header";
+          const h2 = document.createElement("h2"); h2.textContent = block.playerName;
+          const dBtn = document.createElement("button"); dBtn.className = "delete-block-btn"; dBtn.textContent = "削除";
+          dBtn.addEventListener("click", function() { appState.results.splice(bi, 1); renderResults(); saveState(); });
+          
+          hDiv.appendChild(h2); hDiv.appendChild(dBtn); bDiv.appendChild(hDiv);
 
-        function saveSetting(key, value) {
-            state.settings[key] = value;
-            try { localStorage.setItem(`psd_${key}`, value); } catch (e) {}
-        }
+          const ul = document.createElement("ul"); ul.className = "result-list";
+          block.links.forEach(function(link) {
+            const li = document.createElement("li"); li.className = "result-item";
+            const a = document.createElement("a"); a.className = "card-link"; a.href = link.url; a.target = "_blank";
+            const tSpan = document.createElement("span"); tSpan.className = "card-title"; tSpan.textContent = link.platformName;
+            const hSpan = document.createElement("span"); hSpan.className = "card-hint"; hSpan.textContent = link.desc;
+            a.appendChild(tSpan); a.appendChild(hSpan); li.appendChild(a); ul.appendChild(li);
+          });
+          bDiv.appendChild(ul); container.appendChild(bDiv);
+        });
+      }
 
-        function executeSearch() {
-            const targets = state.players.map(p => p.trim()).filter(p => p !== '');
-            if (targets.length === 0) return alert('プレイヤー名を入力してください。');
+      function executeSearch() {
+        updateInputs();
+        const valid = appState.inputs.map(n => n.trim()).filter(n => n !== "");
+        if (valid.length === 0) return;
+        appState.results = valid.map(name => ({ playerName: name, links: generateLinks(name) }));
+        renderResults(); saveState();
+        document.getElementById("results-container").scrollIntoView({ behavior: 'smooth' });
+      }
 
-            const today = new Date().toLocaleDateString('ja-JP');
-            els.resultsOutput.innerHTML = '';
+      function init() {
+        injectDynamicManifest();
+        loadState();
+        syncSettingsUI();
+        renderInputForm();
+        renderResults();
 
-            targets.forEach(player => {
-                addHistory(player, today);
+        document.getElementById("game-select").addEventListener("change", handleSettingsChange);
+        document.getElementById("game-custom").addEventListener("input", handleSettingsChange);
+        document.getElementById("search-mode").addEventListener("change", handleSettingsChange);
+        document.getElementById("btn-search").addEventListener("click", executeSearch);
+        
+        document.getElementById("open-settings").addEventListener("click", function() {
+          document.getElementById("settings-modal").style.display = "block";
+        });
+        document.getElementById("close-settings").addEventListener("click", function() {
+          document.getElementById("settings-modal").style.display = "none";
+        });
+      }
 
-                let query = '';
-                const { game, routing } = state.settings;
-                
-                // 動的ルーティングエンジン
-                if (routing === 'smart') query = `${game} ${player}`;
-                else if (routing === 'direct') query = player;
-                else query = `${player} 検索`;
-
-                const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-
-                const wrap = document.createElement('div');
-                wrap.className = 'p-3 bg-black/60 rounded-lg border border-zinc-800 flex justify-between items-center';
-                
-                const nameCol = document.createElement('div');
-                const badge = document.createElement('span');
-                badge.className = 'text-[9px] bg-red-950/50 text-zinc-300 px-1.5 py-0.5 rounded mr-2 font-bold';
-                badge.textContent = game.toUpperCase();
-                
-                const nameTxt = document.createElement('span');
-                nameTxt.className = 'text-sm font-bold text-zinc-200';
-                nameTxt.textContent = player;
-                
-                nameCol.appendChild(badge);
-                nameCol.appendChild(nameTxt);
-
-                const link = document.createElement('a');
-                link.href = url;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                link.className = 'text-[10px] font-bold text-red-400 bg-red-950/30 border border-red-900/50 px-3 py-1.5 rounded hover:bg-red-900/50 transition';
-                link.innerHTML = '追跡 <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>';
-
-                wrap.appendChild(nameCol);
-                wrap.appendChild(link);
-                els.resultsOutput.appendChild(wrap);
-            });
-
-            els.accordion.classList.add('open');
-            setTimeout(() => els.accordion.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
-        }
-
-        function addHistory(name, date) {
-            state.history = state.history.filter(h => !(h.name === name && h.date === date));
-            state.history.unshift({ id: Date.now() + Math.random(), name, date });
-            if (state.history.length > 100) state.history.length = 100;
-            try { localStorage.setItem('psd_history', JSON.stringify(state.history)); } catch (e) {}
-        }
-
-        function renderHistory() {
-            els.historyList.innerHTML = '';
-            const search = els.historySearch.value.toLowerCase();
-
-            const filtered = state.history.filter(h => {
-                if (!h || !h.name) return false;
-                return h.name.toLowerCase().includes(search);
-            });
-
-            if (filtered.length === 0) {
-                els.historyList.innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">履歴がありません</p>';
-                return;
-            }
-
-            filtered.forEach(h => {
-                const wrap = document.createElement('div');
-                wrap.className = 'flex justify-between items-center p-2.5 bg-black/50 rounded border border-zinc-800';
-                
-                const info = document.createElement('div');
-                info.className = 'cursor-pointer flex-grow';
-                info.addEventListener('click', () => {
-                    state.players = [h.name];
-                    renderInputs();
-                    els.modalHistory.classList.add('hidden');
-                    els.accordion.classList.remove('open');
-                });
-
-                const n = document.createElement('div');
-                n.className = 'text-sm font-bold text-zinc-200';
-                n.textContent = safeSanitize(h.name);
-                
-                const d = document.createElement('div');
-                d.className = 'text-[9px] text-zinc-500 mt-0.5';
-                d.textContent = safeSanitize(h.date);
-
-                info.appendChild(n);
-                info.appendChild(d);
-
-                const del = document.createElement('button');
-                del.className = 'text-zinc-600 hover:text-red-500 p-2 ml-2';
-                del.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-                del.addEventListener('click', () => {
-                    state.history = state.history.filter(item => item.id !== h.id);
-                    try { localStorage.setItem('psd_history', JSON.stringify(state.history)); } catch (e) {}
-                    renderHistory();
-                });
-
-                wrap.appendChild(info);
-                wrap.appendChild(del);
-                els.historyList.appendChild(wrap);
-            });
-        }
-
-        function clearHistory() {
-            if (!confirm('全履歴を削除しますか？')) return;
-            state.history = [];
-            try { localStorage.removeItem('psd_history'); } catch (e) {}
-            renderHistory();
-        }
-
-        // DOM構築完了後に実行
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+      if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+      } else {
+          init();
+      }
+    })();
+  </script>
 </body>
 </html>
