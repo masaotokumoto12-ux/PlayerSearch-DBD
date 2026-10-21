@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; connect-src 'self' https:; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
-  <meta name="psd-version" content="3.2.3">
+  <meta name="psd-version" content="3.3.0">
   <meta name="theme-color" content="#0c0d0f">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,8 +15,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./styles.css?v=3.2.3">
-  <script type="module" src="./app.js?v=3.2.3"></script>
+  <link rel="stylesheet" href="./styles.css?v=3.3.0">
+  <script type="module" src="./app.js?v=3.3.0"></script>
 </head>
 <body>
   <main>
@@ -40,16 +40,6 @@
     </section>
     <button id="search" class="button primary full">検索</button>
     <section id="results" aria-label="プレイヤーごとの検索先（本人一致は未確認）" aria-live="polite"></section>
-    <section class="panel steam-panel" aria-labelledby="steam-title">
-      <div class="section-heading"><h2 id="steam-title">SteamのBAN情報</h2><span class="badge">Steam限定</span></div>
-      <p class="hint">SteamID64かプロフィールURLで確認します。表示名だけでは特定できません。</p>
-      <p id="steam-api-status" class="hint" role="status">接続設定を確認中…</p>
-      <label for="steam-target">SteamID64 / プロフィールURL</label>
-      <div class="steam-input"><input id="steam-target" type="text" maxlength="300" autocomplete="off" placeholder="https://steamcommunity.com/profiles/…"><button id="check-steam" class="button secondary">確認</button></div>
-      <label for="steam-name">比較するSteam表示名（任意）</label><input id="steam-name" type="text" maxlength="256" autocomplete="off" placeholder="名前の一致を比較する場合に入力">
-      <button id="open-steam" class="button secondary full">Steam公式プロフィールを開く</button>
-      <div id="steam-result" role="status" aria-live="polite"></div>
-    </section>
     <footer><span id="app-version"></span><span id="offline-status"></span><p>検索情報の一致は、同一人物の証明ではありません。</p></footer>
     <noscript><p>このアプリはJavaScriptを有効にすると使用できます。</p></noscript>
   </main>
@@ -59,7 +49,7 @@
     <div class="field"><label for="game">対象ゲーム</label><select id="game"><option value="dbd">Dead by Daylight (DBD)</option><option value="apex">Apex Legends</option><option value="valorant">VALORANT</option><option value="other">その他（自由入力）</option><option value="">ゲーム名を付けない</option></select></div>
     <div id="custom-game-field" class="field" hidden><label for="custom-game">ゲーム名</label><input id="custom-game" type="text" maxlength="80" autocomplete="off"></div>
     <div class="field"><label for="mode">検索モード</label><select id="mode"><option value="smart">スマート検索</option><option value="force-google">6媒体すべてGoogle検索</option></select></div>
-    <p class="hint">スマート検索はサービス内で名前を検索します。ID候補は別リンクです。GoogleモードではAPI自動検索を行いません。</p>
+    <p class="hint">スマート検索はサービス内で名前を検索します。GoogleモードではAPI自動検索を行いません。</p>
     <hr>
     <h3>データを守る</h3>
     <p class="hint">履歴・入力・設定は端末内に保存します。ブラウザーの削除操作や保存領域の整理に備え、JSONを書き出してください。</p>

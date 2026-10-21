@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none">
+<defs><linearGradient id="iron" x2="1" y2="1"><stop stop-color="#c1b9ad"/><stop offset=".25" stop-color="#403b3a"/><stop offset=".5" stop-color="#aaa298"/><stop offset=".8" stop-color="#383536"/><stop offset="1" stop-color="#b1a49a"/></linearGradient></defs>
+<path d="M16 5H104L115 16V104L104 115H16L5 104V16Z" stroke="#141315" stroke-width="8"/>
+<path d="M16 5H104L115 16V104L104 115H16L5 104V16Z" stroke="url(#iron)" stroke-width="3"/>
+<path d="M20 11H100L109 20V100L100 109H20L11 100V20Z" stroke="#8d8179"/>
+<path d="m2 2 14 7 8 15L9 16ZM118 2l-14 7-8 15 15-8ZM2 118l14-7 8-15-15 8ZM118 118l-14-7-8-15 15 8Z" fill="#494044" stroke="#b2a79a"/>
+<path d="m4 4 17 17m95-17-17 17M4 116l17-17m95 17-17-17" stroke="#d4c8b8"/>
+<path d="M15 3v12H3m102-12v12h12M15 117v-12H3m102 12v-12h12" stroke="#746367"/>
+</svg>

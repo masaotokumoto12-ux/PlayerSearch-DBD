@@ -1,4 +1,4 @@
-const VERSION = '3.2.3';
+const VERSION = '3.3.0';
 const SCHEMA = 4;
 const STORAGE_KEY = 'psd-core-v4';
 const MAX_PLAYERS = 4;
@@ -284,7 +284,7 @@ function link(text, url) {
 let storage; try { storage = window.localStorage; } catch { /* memory-only mode */ }
 const loaded = readState(storage);
 let state = loaded.state, blocked = loaded.blocked ?? false, apiBase = '', registration, run = 0, updateRequested = false;
-let searchSource = '検索API', steamRun = 0;
+let searchSource = '検索API';
 const notices = new Set(loaded.warnings), candidateGroups = new Map(), pending = new Set();
 const apiStatuses = {
   not_configured: '検索APIキー未設定', no_match: '取得した範囲に文字列一致の候補なし',
@@ -304,11 +304,6 @@ function invalidateSearch() {
   run++;
   for (const request of pending) if (request.path === 'search') request.controller.abort();
   candidateGroups.clear();
-}
-function invalidateSteam() {
-  steamRun++;
-  for (const request of pending) if (request.path === 'steam') request.controller.abort();
-  $('check-steam').disabled = false; $('steam-result').replaceChildren();
 }
 function settingsLabel() { return `${gamePrefix(state) || 'ゲーム指定なし'} · ${state.mode === 'smart' ? 'スマート検索' : 'Google検索'}`; }
 function syncSettings() {
@@ -359,7 +354,6 @@ function renderCandidates(target, key) {
       if (nameMatch.observed) card.append(el('p', '', `URL上のID：${nameMatch.observed} · ${matchLabels[nameMatch.status]}`));
       if (typeof item.description === 'string') card.append(el('p', '', item.description.slice(0, 500)));
       card.append(el('p', '', `出典：${searchSource} · 取得：${formatTime(group.checkedAt)} · 本人未確認`));
-      if (platform.id === 'steam' && steamProfile(url)) card.append(button('このSteamアカウントのBAN情報を確認', 'secondary', () => { invalidateSteam(); $('steam-target').value = url; $('steam-name').value = state.resultNames[Number(key.split(':')[0])] || ''; checkSteam(); $('steam-result').scrollIntoView({ block: 'nearest', behavior: motion() }); }));
       groupPanel.append(card);
     }
   }
@@ -425,7 +419,6 @@ const configReady = (async () => {
     }
   } catch { showNotice('接続設定を取得できませんでした。検索先リンクと端末内データは利用できます。'); }
   $('connection-status').textContent = apiBase ? 'APIサーバー接続先を設定済み' : '静的モード · 自動検索は未接続';
-  $('steam-api-status').textContent = apiBase ? '照会先を設定済み・取得は未確認' : 'BAN情報の自動照会は未接続です。プロフィールは開けます。';
   renderResults();
 })();
 async function executeSearch() {
@@ -461,48 +454,10 @@ function renderHistory() {
   });
   $('history-list').replaceChildren(...(items.length ? items : [el('p', 'hint', query ? '一致する履歴はありません。' : '履歴はありません。')]));
 }
-async function checkSteam() {
-  await configReady;
-  if ($('check-steam').disabled) return;
-  const target = $('steam-target').value.trim(); if (!target) { $('steam-result').textContent = 'SteamID64かSteamプロフィールURLを入力してください。'; return; }
-  const profile = steamProfile(target);
-  if (!profile) { $('steam-result').textContent = 'SteamID64（17桁）か、steamcommunity.comの/profiles/・/id/のURLを入力してください。'; return; }
-  if (!apiBase) {
-    $('steam-result').replaceChildren(el('p', '', 'BAN情報は未確認です。自動照会先が未接続です。'), link('Steam公式プロフィールを開く', profile));
-    return;
-  }
-  const thisRun = ++steamRun, expectedName = $('steam-name').value.trim();
-  $('check-steam').disabled = true; $('steam-result').textContent = 'Steam公式APIに照会中…';
-  try {
-    const data = await request('steam', { target: profile, expectedName });
-    if (thisRun !== steamRun) return;
-    if (data.status !== 'ok') { $('steam-result').textContent = ({ not_configured: 'Steam Web APIキーが未設定です。BAN情報は未確認です。', no_match: '指定URLのSteamIDを解決できませんでした。', unavailable: 'Steam APIから取得できませんでした。BAN情報は未確認です。' })[data.status] ?? '取得できませんでした。BAN情報は未確認です。'; return; }
-    const bans = data.bans;
-    if (!/^\d{17}$/.test(data.steamId) || !bans || typeof bans.vac !== 'boolean' || typeof bans.community !== 'boolean' || ![bans.vacCount, bans.gameCount, bans.daysSinceLastBan].every(v => Number.isSafeInteger(v) && v >= 0) || typeof bans.economy !== 'string') throw new Error('Steam APIの応答形式が不正です。BAN情報は未確認です。');
-    const requestedId = /\/profiles\/(\d{17})\/?$/.exec(profile)?.[1];
-    if ((requestedId && data.steamId !== requestedId) || bans.vac !== (bans.vacCount > 0)) throw new Error('Steam APIの応答が指定アカウントまたはBAN件数と一致しません。');
-    const result = el('div'); result.append(link(`${data.name || data.steamId}（プロフィール）`, `https://steamcommunity.com/profiles/${data.steamId}/`));
-    const list = el('dl');
-    if (expectedName) result.append(el('p', '', `現在のSteam表示名との比較：${({ exact: '完全一致', partial: '部分一致', none: '一致なし', unverified: '未比較' })[compareNames(data.name, expectedName)]}（同一人物の証明ではありません）`));
-    const pairs = [['SteamID64', data.steamId], ['VAC BAN', `${bans.vac ? 'あり' : 'なし'} · ${bans.vacCount}件`], ['ゲームBAN', `${bans.gameCount}件`], ['コミュニティBAN', bans.community ? 'あり' : 'なし'], ['トレード制限（EconomyBan）', bans.economy], ['最後のBANからの日数', bans.vacCount || bans.gameCount ? `${bans.daysSinceLastBan}日` : '該当情報なし']];
-    for (const [title, value] of pairs) list.append(el('dt', '', title), el('dd', '', value));
-    result.append(list, el('p', 'hint', `出典：Steam Web API / ISteamUser · 取得：${formatTime(data.checkedAt)}`), el('p', 'hint', 'Steam APIが返した情報です。DbDでの不正や、他媒体と同一人物であることを示しません。'));
-    $('steam-result').replaceChildren(result);
-  } catch (error) { if (thisRun === steamRun) $('steam-result').textContent = `${error.message} BAN情報は未確認です。`; }
-  finally { if (thisRun === steamRun) $('check-steam').disabled = false; }
-}
 function bind() {
   $('app-version').textContent = `v${VERSION}`;
   $('add-player').addEventListener('click', () => { if (state.inputs.length >= MAX_PLAYERS) return; state.inputs.push(''); persist(); renderInputs(state.inputs.length - 1); });
   $('search').addEventListener('click', executeSearch);
-  $('check-steam').addEventListener('click', checkSteam);
-  $('open-steam').addEventListener('click', () => {
-    const url = steamProfile($('steam-target').value);
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
-    else $('steam-result').textContent = '有効なSteamID64かプロフィールURLを入力してください。';
-  });
-  for (const id of ['steam-target', 'steam-name']) $(id).addEventListener('input', invalidateSteam);
-  $('steam-target').addEventListener('keydown', event => { if (event.key === 'Enter' && !event.isComposing && event.keyCode !== 229) { event.preventDefault(); checkSteam(); } });
   for (const id of ['game', 'custom-game', 'mode']) $(id).addEventListener(id === 'custom-game' ? 'input' : 'change', () => {
     state.game = $('game').value; state.customGame = $('custom-game').value; state.mode = $('mode').value;
     invalidateSearch(); syncSettings(); persist(); renderResults();
