@@ -1,4 +1,4 @@
-const VERSION = '3.2.0';
+const VERSION = '3.2.1';
 const SCHEMA = 4;
 const STORAGE_KEY = 'psd-core-v4';
 const MAX_PLAYERS = 4;
@@ -340,7 +340,7 @@ function renderInputs(focusIndex) {
 function renderCandidates(target, key) {
   if (state.mode === 'force-google') { target.append(el('p', 'result-status', 'Googleモードです。下の検索先リンクから検索できます。')); return; }
   const result = candidateGroups.get(key);
-  if (!result) { target.append(el('p', 'result-status', apiBase ? '自動検索は未実行です。一括検索で取得します。' : '自動検索は未接続です。検索先リンクを利用できます。')); return; }
+  if (!result) { target.append(el('p', 'result-status', apiBase ? '自動検索は未実行です。「検索」で取得します。' : '自動検索は未接続です。検索先リンクを利用できます。')); return; }
   if (result.loading || result.error) { target.append(el('p', 'result-status', result.loading ? '公開ページの候補を取得中…' : result.error)); return; }
   const heading = el('h3', '', '名前の文字列が一致する公開ページ'); target.append(heading);
   target.append(el('p', 'hint', '検索エンジンに登録されたタイトル・説明・URLを照合しています。アカウントの現在の存在、表示名の完全一致、同一人物を確認する機能ではありません。'));
@@ -349,7 +349,8 @@ function renderCandidates(target, key) {
     const items = (Array.isArray(group?.candidates) ? group.candidates : [])
       .filter(item => object(item) && item.evidence === 'indexed_text_match' && safePlatformUrl(item.url, platform)).slice(0, 5);
     const status = group?.status === 'ok' && !items.length ? '候補データの形式を確認できません' : apiStatuses[group?.status] ?? apiStatuses.unavailable;
-    const line = el('div', 'platform-status'); line.append(el('strong', '', platform.name), el('span', '', status)); target.append(line);
+    const groupPanel = el('section', 'platform-group');
+    const line = el('div', 'platform-status'); line.append(el('strong', '', platform.name), el('span', '', status)); groupPanel.append(line); target.append(groupPanel);
     for (const item of items) {
       const url = safePlatformUrl(item?.url, platform); if (!url || item.evidence !== 'indexed_text_match') continue;
       const card = el('article', 'candidate'); card.append(link(String(item.title || platform.name), url));
@@ -359,7 +360,7 @@ function renderCandidates(target, key) {
       if (typeof item.description === 'string') card.append(el('p', '', item.description.slice(0, 500)));
       card.append(el('p', '', `出典：${searchSource} · 取得：${formatTime(group.checkedAt)} · 本人未確認`));
       if (platform.id === 'steam' && steamProfile(url)) card.append(button('このSteamアカウントのBAN情報を確認', 'secondary', () => { invalidateSteam(); $('steam-target').value = url; $('steam-name').value = state.resultNames[Number(key.split(':')[0])] || ''; checkSteam(); $('steam-result').scrollIntoView({ block: 'nearest', behavior: motion() }); }));
-      target.append(card);
+      groupPanel.append(card);
     }
   }
 }
@@ -375,14 +376,25 @@ function renderResults() {
     if (gamePrefix(state)) ordinary.append(link('ゲーム名を加えて検索', `https://www.google.com/search?q=${encodeURIComponent(searchQuery(state, searchIdentity(name).value))}`));
     block.append(ordinary);
     const details = el('details'); details.open = !apiBase || state.mode === 'force-google' || !!candidateGroups.get(key)?.error;
-    details.append(el('summary', '', '検索先リンク（アカウント発見結果ではありません）'));
+    details.append(el('summary', '', '媒体別に検索する'));
+    details.append(el('p', 'hint', '検索先へのリンクです。発見済みのアカウントではありません。'));
+    const routeGrid = el('div', 'route-grid');
     for (const route of generateLinks(state, name)) {
-      const row = el('div', 'route'); row.append(link(route.name, route.url), el('span', 'badge', route.id === '5ch' ? '本文未確認' : 'アカウント未確認'));
-      if (route.fallback !== route.url) row.append(link('Googleで検索', route.fallback));
-      if (route.contextual !== route.fallback) row.append(link('ゲーム名も含める', route.contextual));
-      if (state.mode === 'smart' && route.profile) row.append(link('ID候補を開く（未確認）', route.profile));
-      row.append(el('p', 'hint', route.kind)); details.append(row);
+      const row = el('section', 'route');
+      const routeHeader = el('div', 'route-heading');
+      routeHeader.append(el('h3', '', route.name), el('span', 'badge', '未確認'));
+      const mainLink = link(state.mode === 'force-google' || route.id === '5ch' ? 'Googleで検索 ↗' : '名前で検索 ↗', route.url);
+      mainLink.className = 'route-primary';
+      mainLink.setAttribute('aria-label', `${route.name}：${mainLink.textContent}`);
+      row.append(routeHeader, mainLink);
+      const extra = el('details', 'route-extra');
+      extra.append(el('summary', '', 'ほかの探し方'));
+      if (route.fallback !== route.url) extra.append(link('Googleで検索', route.fallback));
+      if (route.contextual !== route.fallback) extra.append(link('ゲーム名も含める', route.contextual));
+      if (state.mode === 'smart' && route.profile) extra.append(link('ID候補を開く（未確認）', route.profile));
+      row.append(extra); routeGrid.append(row);
     }
+    details.append(routeGrid);
     block.append(details);
     const variants = nameVariants(name).slice(1);
     if (variants.length) {
