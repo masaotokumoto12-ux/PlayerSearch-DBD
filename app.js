@@ -1,4 +1,4 @@
-const VERSION = '3.2.2';
+const VERSION = '3.2.3';
 const SCHEMA = 4;
 const STORAGE_KEY = 'psd-core-v4';
 const MAX_PLAYERS = 4;

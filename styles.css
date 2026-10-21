@@ -36,3 +36,6 @@ input,select{border-radius:2px 8px 2px 8px;border-color:#59565d;background:linea
 @media(max-width:540px){.brand{padding-left:48px}.knight-crest{width:44px;height:64px}.brand h1{font-size:36px}.brand .subtitle{font-size:12px;letter-spacing:0}.media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.knight-result{padding:20px 14px 16px}.header-actions{gap:6px}.header-actions .icon-button{min-width:44px;min-height:44px}}
 @media(max-width:360px){.brand{padding-left:37px}.knight-crest{width:34px;height:54px;left:-2px}.brand h1{font-size:32px}.brand .subtitle{font-size:11px}.app-header{gap:4px}}
 @media print{.knight-result,.media-link{background:white;color:black;box-shadow:none;border:1px solid #777}}
+
+/* Logo removed: reclaim the title space at every viewport size. */
+.brand{padding-left:0}
