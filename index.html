@@ -1,469 +1,605 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
-  <title>Player Check Pro</title>
-  
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none';" />
-  
-  <meta name="theme-color" content="#0c0d0f" />
-  <meta name="color-scheme" content="dark" />
-  
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="D.P.S" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Y/3vysnM2fOlynwQR/6jqSeAaZElD31USj8zutgkF1Y='; style-src 'sha256-zQpW1Bp08hd8nRm068f00WeKloqj5b6AufrFuEDZ5qk='; img-src 'self' data:; manifest-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="psd-version" content="3.1.0">
+  <meta name="theme-color" content="#0c0d0f">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="P.S.D">
+  <meta name="referrer" content="no-referrer">
+  <title>P.S.D — DBD Player Search</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <style>:root{color-scheme:dark;--bg:#0c0d0f;--panel:rgba(20,20,22,.88);--line:rgba(138,10,10,.45);--fg:#f0eff1;--muted:#b2afb9;--accent:#ed6375;--tap:48px;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+*{box-sizing:border-box}body{margin:0;color:var(--fg);background:var(--bg);isolation:isolate;min-height:100vh;min-height:100dvh;line-height:1.6;-webkit-tap-highlight-color:transparent}body:has(dialog[open]){overflow:hidden}main{max-width:680px;margin:auto;padding:calc(28px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+button,input,select,a{font:inherit}button,input,select{touch-action:manipulation}button{cursor:pointer}button:disabled{opacity:.5;cursor:default}a{color:#ff9aaf;overflow-wrap:anywhere}button:focus-visible,a:focus-visible{outline:3px solid #ff8da7;outline-offset:3px}input:focus,select:focus{outline:2px solid var(--accent);outline-offset:2px}[hidden]{display:none!important}
+.app-header,.header-actions,.section-heading,.dialog-heading,.player-header{display:flex;align-items:center;justify-content:space-between;gap:12px}.app-header{margin-bottom:28px;align-items:flex-start}.header-actions{gap:8px;padding-top:10px}h1{color:var(--accent);font-family:Georgia,serif;font-weight:800;font-size:46px;letter-spacing:.08em;line-height:1.05;margin:5px 0}h2{font-size:17px;margin:0}h3{font-size:15px;margin:12px 0}p{margin:8px 0}.eyebrow{font-size:10px;letter-spacing:.2em;color:var(--muted);margin:0}.subtitle{font-size:12px;color:var(--muted);margin:5px 0}.icon-button{display:grid;place-items:center;min-width:var(--tap);min-height:var(--tap);border:1px solid var(--line);border-radius:12px;background:#1a171c;color:var(--fg)}svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.panel{padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:0 10px 32px #0004;margin-bottom:20px}.section-heading{margin-bottom:16px}.muted,.hint{color:var(--muted);font-size:12px}.hint{line-height:1.8}.notice{border-left:3px solid var(--accent);padding:12px;background:#391821;font-size:13px;white-space:pre-line}.install-banner{border-color:#8f344c}.install-banner p{font-size:13px}.name-row{display:flex;gap:8px;margin-bottom:12px}.name-row input{min-width:0;flex:1}.name-label{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px}input,select{display:block;width:100%;min-width:0;min-height:var(--tap);font-size:16px;padding:10px 12px;color:var(--fg);border:1px solid #46434e;border-radius:9px;background:#0e0e12}select{padding-right:8px}input::placeholder{color:#8d8996}.button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--tap);min-width:var(--tap);padding:10px 14px;border-radius:9px;border:1px solid var(--line);font-size:14px;font-weight:650;color:var(--fg);text-decoration:none;background:#24232b;flex-shrink:0}.button:active,.icon-button:active{transform:scale(.98)}.full{width:100%}.primary{min-height:58px;font-size:17px;letter-spacing:.06em;border-color:#bc3653;background:linear-gradient(#a32343,#6c1630);box-shadow:0 5px 16px #0007}.secondary{background:#24232b}.danger{background:#3b1923;border-color:#804052;color:#ffc0cd}.remove{color:#ffacbe;background:#28171e}.search-context{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;font-size:11px;color:var(--muted);margin-top:12px}#results{margin-top:24px}.player-header{border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px;align-items:flex-start}.player-header h2{flex:1;min-width:0;overflow-wrap:anywhere;font-size:18px}.badge{display:inline-block;border:1px solid #64414b;background:#351c26;color:#f4bac7;border-radius:5px;padding:2px 6px;font-size:10px}.result-status{font-size:13px;color:var(--muted);white-space:pre-line}.candidate{padding:12px;border:1px solid var(--line);border-radius:9px;margin:8px 0;min-width:0}.candidate>a{display:block;min-height:48px;font-size:14px;font-weight:600}.candidate p{font-size:12px;overflow-wrap:anywhere;color:var(--muted)}.platform-status{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;padding:8px 0;border-bottom:1px solid #2c2932}.platform-status span{color:var(--muted)}details{border-top:1px solid var(--line);margin-top:18px;padding-top:8px}summary{cursor:pointer;min-height:48px;display:list-item;align-content:center;font-size:13px;color:var(--muted)}.route{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;border-bottom:1px solid #2c2932;padding:8px 0}.route a{min-height:48px;align-content:center;font-size:13px}.route .hint{flex-basis:100%;margin:0}.steam-panel{margin-top:28px}.steam-input{display:flex;gap:8px}.steam-input input{flex:1;min-width:0}#steam-result{font-size:13px;margin-top:12px;overflow-wrap:anywhere}dl{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin:12px 0}dt{color:var(--muted)}dd{margin:0}footer{color:var(--muted);text-align:center;font-size:11px;padding:10px}footer>span{padding:0 6px}
+dialog{width:calc(100% - 28px);max-width:440px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));margin:auto;padding:20px;border:1px solid var(--line);border-radius:16px;background:#17161d;color:var(--fg);overflow-y:auto;overscroll-behavior:contain}dialog::backdrop{background:#000c;backdrop-filter:blur(6px)}.dialog-heading{margin-bottom:20px}.field{margin:18px 0}.button-stack{display:flex;flex-direction:column;gap:10px}hr{border:0;border-top:1px solid var(--line);margin:22px 0}.history-list{margin-bottom:18px}.history-item{display:flex;gap:8px;margin:8px 0}.history-pick{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;text-align:left;white-space:normal;overflow-wrap:anywhere}.history-pick span{max-width:100%;overflow-wrap:anywhere}.history-pick small{font-size:11px;font-weight:400;color:var(--muted)}
+@media(max-width:360px){main{padding-right:14px;padding-left:14px}.panel{padding:14px}.button{padding:10px}.steam-input{flex-wrap:wrap}.steam-input input{flex-basis:100%}.steam-input .button{width:100%}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}@media print{body{background:white;color:black}main{max-width:none}.panel{background:white;border-color:black;box-shadow:none}.header-actions,.primary,dialog{display:none}}
 
-  <link rel="apple-touch-icon" href="icon.png" />
-  <link rel="icon" type="image/png" href="icon.png" />
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(to bottom,rgba(13,13,14,.48),rgba(13,13,14,.94)),url('./IMG_8813.jpeg') center top/cover no-repeat;pointer-events:none}.panel{backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}h1{color:#b52636;text-shadow:0 2px 4px #000,0 0 24px #000}.primary{background:linear-gradient(#5a0505,#150000);border-color:#8a0a0a}.route .badge{margin-left:auto}#steam-name{margin:8px 0 14px}.icon-button{background:rgba(20,20,22,.85)}
+</style>
+  <script type="module">const VERSION = '3.1.0';
+const SCHEMA = 4;
+const STORAGE_KEY = 'psd-core-v4';
+const MAX_PLAYERS = 4;
+const MAX_NAME = 256;
+const PLATFORMS = Object.freeze([
+  { id: 'steam', name: 'Steam', site: 'site:steamcommunity.com', hosts: ['steamcommunity.com'] },
+  { id: 'x', name: 'X (Twitter)', site: '(site:x.com OR site:twitter.com)', hosts: ['x.com', 'twitter.com'] },
+  { id: 'youtube', name: 'YouTube', site: 'site:youtube.com', hosts: ['youtube.com', 'youtu.be'] },
+  { id: 'twitch', name: 'Twitch', site: 'site:twitch.tv', hosts: ['twitch.tv'] },
+  { id: 'tiktok', name: 'TikTok', site: 'site:tiktok.com', hosts: ['tiktok.com'] },
+  { id: '5ch', name: '5ちゃんねる', site: '(site:5ch.net OR site:2ch.sc)', hosts: ['5ch.net', '2ch.sc'] }
+]);
+const LEGACY_KEYS = Object.freeze(['dps-state', 'dps-core-v6', 'psd-core-v3', 'player-check-pro-v2', 'psd_history']);
+const object = value => value && typeof value === 'object' && !Array.isArray(value);
+const wellFormed = value => typeof value.isWellFormed !== 'function' || value.isWellFormed();
+const GAMES = new Set(['dbd', 'apex', 'valorant', 'other', '']);
+const MODES = new Set(['smart', 'force-google']);
+const uid = () => globalThis.crypto?.randomUUID?.() ?? `dps-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const validName = value => typeof value === 'string' && value.trim().length > 0 && [...value].length <= MAX_NAME && wellFormed(value);
+function defaultState() {
+  return { schemaVersion: SCHEMA, game: 'dbd', customGame: '', mode: 'smart', inputs: [''], resultNames: [], history: [], migratedLegacyKeys: [] };
+}
+function dayString(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+function normalizeDate(value) {
+  if (typeof value !== 'string') return null;
+  const match = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(value);
+  if (!match) return null;
+  const [, y, m, d] = match.map(Number);
+  if (y < 1900 || y > 9999) return null;
+  const test = new Date(Date.UTC(y, m - 1, d));
+  return test.getUTCFullYear() === y && test.getUTCMonth() === m - 1 && test.getUTCDate() === d
+    ? `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
+}
+function cleanHistory(items) {
+  const seen = new Set(), ids = new Set();
+  return (Array.isArray(items) ? items : [])
+    .filter(item => object(item) && validName(item.name ?? item.playerName ?? item.query))
+    .map((item, order) => ({ ...item, name: (item.name ?? item.playerName ?? item.query).trim(), date: normalizeDate(item.date), order }))
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '') || a.order - b.order)
+    .filter(item => {
+      // An unknown date is not evidence that two old entries were the same search.
+      if (!item.date) return true;
+      const key = JSON.stringify([item.name, item.date]);
+      if (seen.has(key)) return false;
+      seen.add(key); return true;
+    }).slice(0, 100).map(item => {
+      let id = typeof item.id === 'string' || (typeof item.id === 'number' && Number.isFinite(item.id)) ? String(item.id) : '';
+      if (!id || ids.has(id)) id = uid();
+      ids.add(id);
+      return { id, name: item.name, date: item.date };
+    });
+}
+function fields(raw) {
+  const settings = object(raw?.settings) ? raw.settings : {};
+  return {
+    game: raw?.game ?? raw?.gameTitle ?? raw?.gameSelect ?? settings.game,
+    mode: raw?.mode ?? raw?.searchMode ?? raw?.routing ?? settings.routing,
+    customGame: raw?.customGame ?? raw?.gameCustom ?? settings.customGame,
+    inputs: raw?.inputs ?? raw?.players ?? raw?.names,
+    resultNames: raw?.resultNames ?? raw?.results
+  };
+}
+function sanitizeState(raw) {
+  const state = defaultState();
+  if (!object(raw)) return state;
+  const f = fields(raw);
+  if (GAMES.has(f.game)) state.game = f.game;
+  if (MODES.has(f.mode)) state.mode = f.mode;
+  if (typeof f.customGame === 'string' && [...f.customGame].length <= 80 && wellFormed(f.customGame)) state.customGame = f.customGame;
+  if (Array.isArray(f.inputs)) {
+    state.inputs = f.inputs.filter(v => typeof v === 'string' && [...v].length <= MAX_NAME && wellFormed(v)).slice(0, MAX_PLAYERS);
+    if (!state.inputs.length) state.inputs = [''];
+  }
+  if (Array.isArray(f.resultNames)) {
+    state.resultNames = f.resultNames.map(v => typeof v === 'string' ? v : object(v) ? (v.playerName ?? v.name) : null)
+      .filter(validName).slice(0, MAX_PLAYERS).map(n => n.trim());
+  }
+  // Reject persisted URLs and regenerate all search routes.
+  state.history = cleanHistory(raw.history);
+  state.migratedLegacyKeys = Array.isArray(raw.migratedLegacyKeys)
+    ? [...new Set(raw.migratedLegacyKeys.filter(k => LEGACY_KEYS.includes(k)))] : [];
+  if (raw.migratedLegacyHistory === true && !state.migratedLegacyKeys.includes('psd_history')) state.migratedLegacyKeys.push('psd_history');
+  return state;
+}
+function readState(storage) {
+  const warnings = [], records = [];
+  let current;
+  try { current = storage.getItem(STORAGE_KEY); }
+  catch { return { state: defaultState(), warnings: ['保存領域を読み込めません。入力は画面に保持します。'], needsSave: false }; }
+  let state = defaultState(), hasCurrent = false, currentRecord;
+  if (current !== null && current !== undefined) {
+    try {
+      const parsed = JSON.parse(current);
+      if (!object(parsed)) throw new Error();
+      if (parsed.schemaVersion > SCHEMA) return { state, warnings: ['新しい形式の保存データがあります。上書き防止のため保存を停止しています。'], blocked: true, needsSave: false };
+      state = sanitizeState(parsed); hasCurrent = true; currentRecord = parsed;
+    } catch { return { state, warnings: ['保存JSONが壊れています。元データを残し、上書き保存を停止しました。バックアップの読込で復旧できます。'], blocked: true, needsSave: false }; }
+  }
+  const done = new Set(state.migratedLegacyKeys);
+  for (const key of LEGACY_KEYS) {
+    if (done.has(key)) continue;
+    try {
+      const raw = storage.getItem(key);
+      if (raw !== null && raw !== undefined) {
+        const value = JSON.parse(raw);
+        if (key === 'psd_history') {
+          if (!Array.isArray(value)) throw new Error();
+          records.push({ history: value });
+        } else {
+          if (!object(value)) throw new Error();
+          records.push(value);
+        }
+      }
+      done.add(key);
+    } catch { warnings.push(`${key} は読み込めません。元データは残しています。`); }
+  }
+  let oldGame = null, oldMode = null;
+  try { oldGame = storage.getItem('psd_game'); } catch { /* preserve other usable data */ }
+  try { oldMode = storage.getItem('psd_routing'); } catch { /* preserve other usable data */ }
+  // The supplied legacy UI explicitly names 'google' a search-engine-only mode.
+  // 'direct' has no equivalent; do not silently reinterpret its meaning.
+  const mappedMode = oldMode === 'google' ? 'force-google' : oldMode;
+  if (!hasCurrent) {
+    const candidates = records.map(fields);
+    const choose = (key, valid) => candidates.map(x => x[key]).find(valid);
+    state = sanitizeState({
+      game: choose('game', value => GAMES.has(value)) ?? (GAMES.has(oldGame) ? oldGame : 'dbd'),
+      mode: choose('mode', value => MODES.has(value)) ?? (MODES.has(mappedMode) ? mappedMode : 'smart'),
+      customGame: choose('customGame', value => typeof value === 'string'),
+      inputs: choose('inputs', Array.isArray), resultNames: choose('resultNames', Array.isArray)
+    });
+    if (oldMode && !MODES.has(mappedMode)) warnings.push('旧ダイレクトモード等は互換性がないため、スマート検索に戻しました。');
+  }
+  if (hasCurrent) {
+    const present = fields(currentRecord), oldFields = records.map(fields);
+    const first = (key, valid) => oldFields.map(item => item[key]).find(valid);
+    const fill = {};
+    if (present.game === undefined) fill.game = first('game', value => GAMES.has(value));
+    if (present.mode === undefined) fill.mode = first('mode', value => MODES.has(value));
+    if (present.customGame === undefined) fill.customGame = first('customGame', value => typeof value === 'string');
+    if (present.inputs === undefined) fill.inputs = first('inputs', Array.isArray);
+    if (present.resultNames === undefined) fill.resultNames = first('resultNames', Array.isArray);
+    for (const key of Object.keys(fill)) if (fill[key] === undefined) delete fill[key];
+    state = sanitizeState({ ...state, ...fill });
+  }
+  state.history = cleanHistory([...state.history, ...records.flatMap(value => Array.isArray(value.history) ? value.history : [])]);
+  state.migratedLegacyKeys = [...done];
+  if (records.length || (!hasCurrent && (oldGame !== null || oldMode !== null))) warnings.push('旧データを読み込みました。元の保存キーは削除していません。');
+  return { state, warnings, blocked: false, needsSave: hasCurrent || records.length > 0 || oldGame !== null || oldMode !== null };
+}
+function saveState(storage, state) {
+  try { storage.setItem(STORAGE_KEY, JSON.stringify(sanitizeState(state))); return true; }
+  catch { return false; }
+}
+function addHistory(state, names, date = dayString()) {
+  const fresh = names.map(name => ({ id: uid(), name: name.trim(), date }));
+  state.history = cleanHistory([...fresh, ...state.history]);
+}
+function gamePrefix(state) { return (state.game === 'other' ? state.customGame : state.game).trim(); }
+function searchQuery(state, name, platform) {
+  // Quotes request phrase matching; they do not establish account ownership.
+  const phrase = name.trim().replaceAll('"', ' ').replace(/[\r\n\t]/g, ' ');
+  return [gamePrefix(state), `"${phrase}"`, platform.site].filter(Boolean).join(' ');
+}
+const RESERVED_X = new Set(['home','explore','search','i','settings','messages','notifications','login','signup','compose','intent','share','tos','privacy']);
+const RESERVED_TWITCH = new Set(['search','directory','downloads','settings','subscriptions','inventory','wallet','login','signup','videos','jobs','p','turbo']);
+function generateLinks(state, name) {
+  if (!validName(name)) return [];
+  const text = name.trim(), encoded = encodeURIComponent(text);
+  const direct = {
+    x: /^[A-Za-z0-9_]{1,15}$/.test(text) && !RESERVED_X.has(text.toLowerCase()),
+    youtube: /^[A-Za-z0-9][A-Za-z0-9_.-]{1,28}[A-Za-z0-9]$/.test(text),
+    twitch: /^[A-Za-z0-9][A-Za-z0-9_]{0,24}$/.test(text) && !RESERVED_TWITCH.has(text.toLowerCase()),
+    tiktok: /^[A-Za-z0-9_.]+$/.test(text) && !text.endsWith('.')
+  };
+  const targets = {
+    steam: `https://steamcommunity.com/search/users/?text=${encoded}`,
+    x: `https://x.com/${encoded}`, youtube: `https://www.youtube.com/@${encoded}`,
+    twitch: `https://www.twitch.tv/${encodeURIComponent(text.toLowerCase())}`, tiktok: `https://www.tiktok.com/@${encoded}`
+  };
+  return PLATFORMS.map(platform => {
+    const fallback = `https://www.google.com/search?q=${encodeURIComponent(searchQuery(state, text, platform))}`;
+    let url = fallback, kind = platform.id === '5ch' ? 'Google検索・スレッド本文は未確認' : 'Google検索・結果は未確認';
+    if (state.mode === 'smart' && platform.id === 'steam') { url = targets.steam; kind = 'Steamユーザー検索・アカウントとBANは未確認'; }
+    else if (state.mode === 'smart' && direct[platform.id]) { url = targets[platform.id]; kind = 'IDから作成した候補・存在未確認'; }
+    return { ...platform, url, fallback, kind };
+  });
+}
+function safePlatformUrl(value, platform) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password && !url.port &&
+      platform.hosts.some(host => url.hostname === host || url.hostname.endsWith(`.${host}`)) ? url.href : null;
+  } catch { return null; }
+}
+function compareNames(observed, expected) {
+  if (typeof observed !== 'string' || !validName(expected) || !observed) return 'unverified';
+  const a = observed.normalize('NFC'), b = expected.trim().normalize('NFC');
+  if (a === b) return 'exact';
+  return a.includes(b) || b.includes(a) ? 'partial' : 'none';
+}
+function urlNameMatch(value, platform, expected) {
+  const safe = safePlatformUrl(value, platform);
+  if (!safe) return { status: 'unverified', observed: '', source: 'profile_url_id' };
+  let observed = '', found;
+  const path = new URL(safe).pathname;
+  if (platform.id === 'youtube' || platform.id === 'tiktok') found = /^\/@([^/]+)\/?$/.exec(path);
+  else if (platform.id === 'x' || platform.id === 'twitch') found = /^\/([^/]+)\/?$/.exec(path);
+  if (found) { try { observed = decodeURIComponent(found[1]); } catch { /* unavailable */ } }
+  return { status: compareNames(observed, expected), observed, source: 'profile_url_id' };
+}
+function parseBackup(text) {
+  const value = JSON.parse(text);
+  const data = object(value?.state) ? value.state : value;
+  if (!object(data) || !Array.isArray(fields(data).inputs) || !Array.isArray(data.history)) throw new Error('P.S.Dのバックアップ形式ではありません。');
+  if (data.schemaVersion > SCHEMA) throw new Error('新しい形式のため、この版では読めません。');
+  const state = sanitizeState(data);
+  state.migratedLegacyKeys = [...LEGACY_KEYS];
+  return state;
+}
 
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0c0d0f;
-      --surface: rgba(22, 24, 28, 0.85);
-      --border: #2a2e35;
-      --fg: #e8eaed;
-      --muted: #9aa0a6;
-      --accent: #8ab4f8;
-      --danger: #f28b82;
-      --radius: 12px;
-      --tap-target: 48px; 
+
+const $ = id => document.getElementById(id);
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function button(text, className, handler, label) {
+  const node = el('button', `button ${className}`, text); node.type = 'button';
+  if (label) node.setAttribute('aria-label', label);
+  node.addEventListener('click', handler); return node;
+}
+function link(text, url) {
+  const node = el('a', '', text); node.href = url; node.target = '_blank'; node.rel = 'noopener noreferrer'; node.referrerPolicy = 'no-referrer'; return node;
+}
+let storage; try { storage = window.localStorage; } catch { /* memory-only mode */ }
+const loaded = readState(storage);
+let state = loaded.state, blocked = loaded.blocked ?? false, apiBase = '', registration, run = 0, updateRequested = false;
+const notices = new Set(loaded.warnings), candidateGroups = new Map(), pending = new Set();
+const apiStatuses = {
+  not_configured: '検索APIキー未設定', no_match: '取得した範囲に文字列一致の候補なし',
+  unavailable: '取得できませんでした', invalid_query: '検索語がAPIの上限を超えています', busy: 'サーバーが混雑しています',
+  ok: '検索掲載文に一致する候補あり・実在未確認'
+};
+function showNotice(message) { notices.add(message); $('notice').textContent = [...notices].join('\n'); $('notice').hidden = false; }
+for (const warning of loaded.warnings) showNotice(warning);
+function persist() {
+  if (blocked) return false;
+  const ok = saveState(storage, state);
+  if (!ok) showNotice('端末への保存に失敗しました。入力は画面に残ります。バックアップを書き出してください。');
+  return ok;
+}
+if (loaded.needsSave) persist();
+function invalidateSearch() {
+  run++;
+  for (const controller of pending) controller.abort();
+  pending.clear(); candidateGroups.clear();
+}
+function settingsLabel() { return `${gamePrefix(state) || 'ゲーム指定なし'} · ${state.mode === 'smart' ? 'スマート検索' : 'Google検索'}`; }
+function syncSettings() {
+  $('game').value = state.game; $('custom-game').value = state.customGame; $('mode').value = state.mode;
+  $('custom-game-field').hidden = state.game !== 'other';
+  $('active-settings').textContent = settingsLabel();
+}
+function renderInputs(focusIndex) {
+  const rows = state.inputs.map((name, index) => {
+    const row = el('div', 'name-row');
+    const label = el('label', 'name-label', `プレイヤー${index + 1}`); label.htmlFor = `name-${index}`;
+    const input = el('input'); input.id = `name-${index}`; input.type = 'text'; input.value = name;
+    input.placeholder = 'プレイヤー名を入力'; input.maxLength = 256; input.autocomplete = 'off'; input.spellcheck = false;
+    input.addEventListener('input', () => { state.inputs[index] = input.value; persist(); });
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.isComposing && event.keyCode !== 229) { event.preventDefault(); executeSearch(); }
+    });
+    row.append(label, input);
+    if (state.inputs.length > 1) row.append(button('×', 'remove', () => {
+      state.inputs.splice(index, 1); persist(); renderInputs(Math.min(index, state.inputs.length - 1));
+    }, `プレイヤー${index + 1}の入力欄を削除`));
+    return row;
+  });
+  $('names-container').replaceChildren(...rows);
+  $('slot-count').textContent = `${state.inputs.length} / ${MAX_PLAYERS}`;
+  $('add-player').disabled = state.inputs.length >= MAX_PLAYERS;
+  if (focusIndex !== undefined) $(`name-${focusIndex}`)?.focus();
+}
+function renderCandidates(target, key) {
+  if (state.mode === 'force-google') { target.append(el('p', 'result-status', 'Googleモードです。下の検索先リンクから検索できます。')); return; }
+  const result = candidateGroups.get(key);
+  if (!result) { target.append(el('p', 'result-status', apiBase ? '自動検索は未実行です。一括検索で取得します。' : '自動検索は未接続です。検索先リンクを利用できます。')); return; }
+  if (result.loading || result.error) { target.append(el('p', 'result-status', result.loading ? '公開ページの候補を取得中…' : result.error)); return; }
+  const heading = el('h3', '', '名前の文字列が一致する公開ページ'); target.append(heading);
+  target.append(el('p', 'hint', '検索エンジンに登録されたタイトル・説明・URLを照合しています。アカウントの現在の存在、表示名の完全一致、同一人物を確認する機能ではありません。'));
+  for (const platform of PLATFORMS) {
+    const group = result.groups?.find(g => g?.platform === platform.id);
+    const status = apiStatuses[group?.status] ?? apiStatuses.unavailable;
+    const line = el('div', 'platform-status'); line.append(el('strong', '', platform.name), el('span', '', status)); target.append(line);
+    for (const item of (Array.isArray(group?.candidates) ? group.candidates : []).slice(0, 5)) {
+      const url = safePlatformUrl(item?.url, platform); if (!url || item.evidence !== 'indexed_text_match') continue;
+      const card = el('article', 'candidate'); card.append(link(String(item.title || platform.name), url));
+      const matchLabels = { exact: '完全一致', partial: '部分一致', none: '一致なし', unverified: '未比較' };
+      const observed = item.nameMatch?.source === 'profile_url_id' && typeof item.nameMatch.observed === 'string' ? item.nameMatch.observed : '';
+      if (observed) card.append(el('p', '', `URL上のID：${observed} · ${matchLabels[compareNames(observed, state.resultNames[Number(key.split(':')[0])])]}`));
+      if (typeof item.description === 'string') card.append(el('p', '', item.description.slice(0, 500)));
+      card.append(el('p', '', `出典：Brave Search API · 取得：${formatTime(group.checkedAt)} · 本人未確認`));
+      if (platform.id === 'steam' && /^\/(profiles|id)\/[^/]+\/?$/.test(new URL(url).pathname)) card.append(button('このSteamアカウントのBAN情報を確認', 'secondary', () => { $('steam-target').value = url; $('steam-name').value = state.resultNames[Number(key.split(':')[0])] || ''; checkSteam(); $('steam-result').scrollIntoView({ block: 'nearest', behavior: motion() }); }));
+      target.append(card);
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      min-height: 100dvh;
-      font-family: system-ui, -apple-system, sans-serif;
-      color: var(--fg);
-      line-height: 1.5;
-      background-color: var(--bg);
-      background-image: linear-gradient(rgba(12, 13, 15, 0.7), rgba(12, 13, 15, 0.95)), url('bg-knight.jpg');
-      background-size: cover;
-      background-position: center top;
-      background-attachment: fixed;
+  }
+}
+function renderResults() {
+  const blocks = state.resultNames.map((name, index) => {
+    const key = `${index}:${name}`, block = el('article', 'panel player-block');
+    const header = el('div', 'player-header'); header.append(el('h2', '', name), button('閉じる', 'secondary', () => {
+      invalidateSearch(); state.resultNames.splice(index, 1); persist(); renderResults();
+    }, `${name}の結果を閉じる`)); block.append(header, el('p', 'hint', settingsLabel()));
+    const candidateArea = el('div'); renderCandidates(candidateArea, key); block.append(candidateArea);
+    const details = el('details'); details.open = !apiBase || state.mode === 'force-google';
+    details.append(el('summary', '', '検索先リンク（アカウント発見結果ではありません）'));
+    for (const route of generateLinks(state, name)) {
+      const row = el('div', 'route'); row.append(link(route.name, route.url), el('span', 'badge', route.id === '5ch' ? '本文未確認' : 'アカウント未確認'));
+      if (route.fallback !== route.url) row.append(link('Googleで検索', route.fallback));
+      row.append(el('p', 'hint', route.kind)); details.append(row);
     }
-    main {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 24px 16px 60px;
+    block.append(details); return block;
+  });
+  $('results').replaceChildren(...blocks);
+}
+function formatTime(value) {
+  if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) return '日時不明';
+  return new Date(value).toLocaleString('ja-JP');
+}
+function motion() { return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
+async function request(path, data) {
+  if (!apiBase) throw new Error('APIサーバー未接続です。配布版READMEの設定手順を確認してください。');
+  const controller = new AbortController(); pending.add(controller);
+  const timer = setTimeout(() => controller.abort(), 45_000);
+  try {
+    const response = await fetch(new URL(path, apiBase), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), signal: controller.signal, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
+    const value = await response.json();
+    if (!response.ok) throw new Error(typeof value.error === 'string' ? value.error : 'APIサーバーで取得に失敗しました。');
+    return value;
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('通信が中断されたか、時間内に応答しませんでした。');
+    if (error instanceof TypeError) throw new Error('APIに接続できません。通信状態とサーバー設定を確認してください。');
+    throw error;
+  } finally { clearTimeout(timer); pending.delete(controller); }
+}
+const configReady = (async () => {
+  try {
+    const response = await fetch('./config.json', { cache: 'no-cache', signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error();
+    const config = await response.json();
+    if (typeof config.apiBase === 'string' && config.apiBase) {
+      const url = new URL(config.apiBase, location.href);
+      if ((url.protocol === 'https:' || (url.origin === location.origin && url.protocol === 'http:')) && !url.username && !url.password && !url.search && !url.hash) {
+        url.pathname = url.pathname.replace(/\/?$/, '/'); apiBase = url.href;
+      } else showNotice('APIのURL設定を確認してください。HTTPSが必要です。');
     }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin: 0;
-      color: var(--accent);
-      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    }
-    .settings-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--fg);
-      width: var(--tap-target);
-      height: var(--tap-target);
-      border-radius: 50%;
-      font-size: 1.2rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(4px);
-    }
-    
-    #settings-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg);
-      z-index: 100;
-      padding: env(safe-area-inset-top) 16px 0;
-      overflow-y: auto;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
-    }
-    .modal-header h2 { margin: 0; font-size: 1.2rem; }
-    .close-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--fg);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: bold;
-    }
-    
-    .config-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 24px;
-    }
-    .config-row { margin-bottom: 16px; }
-    .config-row:last-child { margin-bottom: 0; }
-    
-    label.field-label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 8px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-    }
-    
-    select.ui-select, input[type="text"] {
-      width: 100%;
-      min-height: var(--tap-target);
-      padding: 0 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: rgba(0, 0, 0, 0.6);
-      color: var(--fg);
-      font-size: 16px;
-      outline: none;
-      backdrop-filter: blur(4px);
-    }
-    select.ui-select { appearance: none; cursor: pointer; }
-    input[type="text"]:focus, select.ui-select:focus { border-color: var(--accent); }
-    
-    #game-custom { margin-top: 12px; }
-    
-    .names { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-    .name-row { display: flex; gap: 8px; align-items: center; }
-    .icon-btn {
-      min-height: var(--tap-target); min-width: var(--tap-target);
-      display: flex; align-items: center; justify-content: center;
-      border-radius: var(--radius); font-size: 1.25rem; font-weight: bold; flex-shrink: 0;
-      backdrop-filter: blur(4px);
-    }
-    .add-btn { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
-    .rm-btn { background: rgba(0,0,0,0.4); color: var(--danger); border: 1px solid var(--border); }
-    
-    button.primary-btn {
-      width: 100%; min-height: 56px; border: none; border-radius: var(--radius);
-      background: var(--accent); color: #000; font-size: 1.1rem; font-weight: 700;
-      margin-bottom: 32px; box-shadow: 0 4px 12px rgba(138, 180, 248, 0.2);
-    }
-    
-    .player-block { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 24px; border: 1px solid var(--border); backdrop-filter: blur(8px); }
-    .player-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-    .player-block-header h2 { font-size: 1.1rem; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-    .delete-block-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: var(--danger); font-size: 0.9rem; padding: 8px 12px; border-radius: 6px; }
-    
-    ul.result-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-    li.result-item { display: flex; align-items: center; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid transparent; transition: border-color 0.2s; }
-    li.result-item:active { border-color: var(--accent); }
-    a.card-link { flex: 1; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; text-decoration: none; color: var(--fg); min-height: var(--tap-target); }
-    .card-title { font-weight: 600; font-size: 0.95rem; }
-    .card-hint { font-size: 0.8rem; color: var(--muted); }
-    .empty-msg { color: var(--muted); text-align: center; font-size: 0.95rem; padding: 24px 0; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
-    .spacer { min-width: var(--tap-target); flex-shrink: 0; }
-  </style>
+  } catch { showNotice('接続設定を取得できませんでした。検索先リンクと端末内データは利用できます。'); }
+  $('connection-status').textContent = apiBase ? 'APIサーバー接続先を設定済み' : '静的モード · 自動検索は未接続';
+  renderResults();
+})();
+async function executeSearch() {
+  const names = state.inputs.map(value => value.trim()).filter(Boolean);
+  if (!names.length) { showNotice('プレイヤー名を入力してください。'); $('name-0').focus(); return; }
+  if (names.some(n => !validName(n))) { showNotice('プレイヤー名は256文字以内で入力してください。'); return; }
+  if (state.game === 'other' && !state.customGame.trim()) { showNotice('設定でゲーム名を入力するか、「ゲーム名を付けない」を選んでください。'); return; }
+  invalidateSearch(); const thisRun = run;
+  state.resultNames = names; addHistory(state, names); persist(); renderResults();
+  $('results').scrollIntoView({ behavior: motion(), block: 'start' });
+  await configReady;
+  if (thisRun !== run || !apiBase || state.mode === 'force-google') return;
+  for (let index = 0; index < names.length; index++) candidateGroups.set(`${index}:${names[index]}`, { loading: true });
+  renderResults();
+  await Promise.allSettled(names.map(async (name, index) => {
+    const key = `${index}:${name}`;
+    try {
+      const result = await request('search', { name, prefix: gamePrefix(state) });
+      if (thisRun === run) candidateGroups.set(key, Array.isArray(result.groups) ? result : { error: '検索APIの応答形式が不正です。' });
+    } catch (error) { if (thisRun === run) candidateGroups.set(key, { error: error.message }); }
+    if (thisRun === run) renderResults();
+  }));
+}
+function renderHistory() {
+  const query = $('history-filter').value.toLocaleLowerCase('ja-JP');
+  const items = state.history.filter(item => item.name.toLocaleLowerCase('ja-JP').includes(query)).map(item => {
+    const row = el('div', 'history-item');
+    const pick = button('', 'secondary history-pick', () => {
+      invalidateSearch(); state.inputs = [item.name]; state.resultNames = []; persist(); renderInputs(); renderResults(); $('history-dialog').close(); $('name-0').focus();
+    });
+    pick.append(el('span', '', item.name), el('small', '', item.date ?? '日付不明'));
+    row.append(pick, button('×', 'remove', () => { state.history = state.history.filter(h => h.id !== item.id); persist(); renderHistory(); }, `${item.name}の履歴を1件削除`)); return row;
+  });
+  $('history-list').replaceChildren(...(items.length ? items : [el('p', 'hint', query ? '一致する履歴はありません。' : '履歴はありません。')]));
+}
+async function checkSteam() {
+  await configReady;
+  if ($('check-steam').disabled) return;
+  const target = $('steam-target').value.trim(); if (!target) { $('steam-result').textContent = 'SteamID64かSteamプロフィールURLを入力してください。'; return; }
+  $('check-steam').disabled = true; $('steam-result').textContent = 'Steam公式APIに照会中…';
+  try {
+    const data = await request('steam', { target, expectedName: $('steam-name').value.trim() });
+    if (data.status !== 'ok') { $('steam-result').textContent = ({ not_configured: 'Steam Web APIキーが未設定です。BAN情報は未確認です。', no_match: '指定URLのSteamIDを解決できませんでした。', unavailable: 'Steam APIから取得できませんでした。BAN情報は未確認です。' })[data.status] ?? '取得できませんでした。BAN情報は未確認です。'; return; }
+    const bans = data.bans;
+    if (!/^\d{17}$/.test(data.steamId) || !bans || typeof bans.vac !== 'boolean' || typeof bans.community !== 'boolean' || ![bans.vacCount, bans.gameCount, bans.daysSinceLastBan].every(v => Number.isSafeInteger(v) && v >= 0) || typeof bans.economy !== 'string') throw new Error('Steam APIの応答形式が不正です。BAN情報は未確認です。');
+    const result = el('div'); result.append(link(`${data.name || data.steamId}（プロフィール）`, `https://steamcommunity.com/profiles/${data.steamId}/`));
+    const list = el('dl');
+    const expectedName = $('steam-name').value.trim();
+    if (expectedName) result.append(el('p', '', `現在のSteam表示名との比較：${({ exact: '完全一致', partial: '部分一致', none: '一致なし', unverified: '未比較' })[compareNames(data.name, expectedName)]}（同一人物の証明ではありません）`));
+    const pairs = [['SteamID64', data.steamId], ['VAC BAN', `${bans.vac ? 'あり' : 'なし'} · ${bans.vacCount}件`], ['ゲームBAN', `${bans.gameCount}件`], ['コミュニティBAN', bans.community ? 'あり' : 'なし'], ['トレード制限（EconomyBan）', bans.economy], ['最後のBANからの日数', bans.vacCount || bans.gameCount ? `${bans.daysSinceLastBan}日` : '該当情報なし']];
+    for (const [title, value] of pairs) list.append(el('dt', '', title), el('dd', '', value));
+    result.append(list, el('p', 'hint', `出典：Steam Web API / ISteamUser · 取得：${formatTime(data.checkedAt)}`), el('p', 'hint', 'Steam APIが返した情報です。DbDでの不正や、他媒体と同一人物であることを示しません。'));
+    $('steam-result').replaceChildren(result);
+  } catch (error) { $('steam-result').textContent = error.message; }
+  finally { $('check-steam').disabled = false; }
+}
+function bind() {
+  $('app-version').textContent = `v${VERSION}`;
+  $('add-player').addEventListener('click', () => { if (state.inputs.length >= MAX_PLAYERS) return; state.inputs.push(''); persist(); renderInputs(state.inputs.length - 1); });
+  $('search').addEventListener('click', executeSearch);
+  $('check-steam').addEventListener('click', checkSteam);
+  $('steam-target').addEventListener('keydown', event => { if (event.key === 'Enter' && !event.isComposing && event.keyCode !== 229) { event.preventDefault(); checkSteam(); } });
+  for (const id of ['game', 'custom-game', 'mode']) $(id).addEventListener(id === 'custom-game' ? 'input' : 'change', () => {
+    state.game = $('game').value; state.customGame = $('custom-game').value; state.mode = $('mode').value;
+    invalidateSearch(); syncSettings(); persist(); renderResults();
+  });
+  for (const name of ['settings', 'history']) {
+    $(`open-${name}`).addEventListener('click', () => { if (name === 'history') renderHistory(); $(`${name}-dialog`).showModal(); });
+    $(`close-${name}`).addEventListener('click', () => $(`${name}-dialog`).close());
+    $(`${name}-dialog`).addEventListener('keydown', event => {
+      if (event.key !== 'Tab') return;
+      const dialog = event.currentTarget;
+      const items = [...dialog.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href],[tabindex="0"]')].filter(node => node.getClientRects().length);
+      const first = items[0], last = items.at(-1);
+      if (!first) { event.preventDefault(); return; }
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+  }
+  $('history-filter').addEventListener('input', renderHistory);
+  $('clear-history').addEventListener('click', () => { if (confirm('全履歴を削除しますか？')) { state.history = []; persist(); renderHistory(); } });
+  $('export').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify({ app: 'P.S.D', exportedAt: new Date().toISOString(), state }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob), a = el('a'); a.href = url; a.download = `PSD-backup-${new Date().toISOString().slice(0, 10)}.json`; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    $('storage-status').textContent = 'JSONの書き出しを開始しました。ファイルを保管してください。';
+  });
+  $('import').addEventListener('click', () => $('import-file').click());
+  $('import-file').addEventListener('change', async event => {
+    const file = event.target.files?.[0]; if (!file) return;
+    try {
+      if (file.size > 2_000_000) throw new Error('2MB以内のJSONを選んでください。');
+      const imported = parseBackup(await file.text());
+      if (!confirm('バックアップの入力・設定・履歴で、このアプリの保存データを置き換えますか？')) return;
+      invalidateSearch(); state = imported; blocked = false;
+      const ok = persist(); syncSettings(); renderInputs(); renderResults(); renderHistory();
+      $('storage-status').textContent = ok ? 'バックアップを読み込み、保存しました。' : '画面には読み込みましたが、端末への保存には失敗しました。';
+    } catch (error) { $('storage-status').textContent = `読込できません：${error.message}`; }
+    finally { event.target.value = ''; }
+  });
+  $('persist').addEventListener('click', async () => {
+    try {
+      if (!navigator.storage?.persist) { $('storage-status').textContent = 'この環境は保存領域の保護リクエストに対応していません。バックアップをご利用ください。'; return; }
+      const granted = await navigator.storage.persist();
+      $('storage-status').textContent = granted ? '保存領域の保護が許可されました。ユーザーによる削除等には備え、バックアップを続けてください。' : '保存領域の保護は許可されませんでした。バックアップをご利用ください。';
+    } catch { $('storage-status').textContent = '保存領域の保護を確認できませんでした。'; }
+  });
+  $('update').addEventListener('click', checkUpdate);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  $('install-banner').hidden = !isIOS || navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+  const connection = () => { $('offline-status').textContent = navigator.onLine ? 'オンライン' : 'オフライン'; };
+  addEventListener('online', connection); addEventListener('offline', connection); connection();
+}
+async function setupServiceWorker() {
+  if (!('serviceWorker' in navigator) || !window.isSecureContext) { showNotice('この環境ではオフライン起動を準備できません。HTTPSまたはlocalhostを使用してください。'); return; }
+  try {
+    registration = await navigator.serviceWorker.register(new URL('./sw.js', document.baseURI), { scope: './', updateViaCache: 'none' });
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!navigator.serviceWorker.controller || reloading) return;
+      if (updateRequested) { reloading = true; persist(); location.reload(); }
+    });
+    registration.addEventListener('updatefound', () => {
+      const worker = registration.installing;
+      worker?.addEventListener('statechange', () => { if (worker.state === 'installed' && navigator.serviceWorker.controller) $('update-status').textContent = '更新をダウンロードしました。「アプリの更新を確認」で適用できます。'; });
+    });
+  } catch { showNotice('オフライン用データを準備できませんでした。オンラインの機能は使用できます。'); }
+}
+async function checkUpdate() {
+  $('update').disabled = true; $('update-status').textContent = '更新を確認中…';
+  try {
+    if (!navigator.onLine) throw new Error('オフラインのため更新を確認できません。');
+    const response = await fetch('./version.json', { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+    if (!response.ok) throw new Error('バージョン情報を取得できませんでした。');
+    const data = await response.json();
+    if (!/^\d+\.\d+\.\d+$/.test(data.version)) throw new Error('バージョン情報の形式が不正です。');
+    if (!registration) { if (data.version === VERSION) $('update-status').textContent = `最新版です（v${VERSION}）。`; else $('update-status').textContent = `v${data.version}があります。ページを再読み込みしてください。`; return; }
+    await registration.update();
+    if (registration.installing) await new Promise(resolve => {
+      const worker = registration.installing, timer = setTimeout(resolve, 10_000);
+      worker.addEventListener('statechange', () => { if (['installed', 'redundant'].includes(worker.state)) { clearTimeout(timer); resolve(); } });
+    });
+    if (registration.waiting) {
+      updateRequested = true;
+      registration.waiting.postMessage({ type: 'DPS_SKIP_WAITING' });
+      $('update-status').textContent = 'このアプリの更新を適用中…';
+      setTimeout(() => { if (updateRequested) $('update-status').textContent = '更新の切替を確認できませんでした。入力を保存してから、もう一度お試しください。'; }, 15_000);
+    } else $('update-status').textContent = data.version === VERSION ? `最新版です（v${VERSION}）。` : `v${data.version}があります。配信が完了してから再度確認してください。`;
+  } catch (error) { $('update-status').textContent = error instanceof TypeError ? '通信できないため、更新を確認できませんでした。' : error.message || '更新を確認できませんでした。'; }
+  finally { $('update').disabled = false; }
+}
+bind(); syncSettings(); renderInputs(); renderResults(); setupServiceWorker();
+</script>
 </head>
 <body>
-  
-  <div id="settings-modal">
-    <div class="modal-header">
-      <h2>各種設定・詳細</h2>
-      <button class="close-btn" id="close-settings">完了</button>
-    </div>
-
-    <div class="config-block">
-      <div class="config-row">
-        <label class="field-label">対象ゲームタイトル</label>
-        <select id="game-select" class="ui-select">
-          <option value="dbd">Dead by Daylight (DBD)</option>
-          <option value="apex">Apex Legends</option>
-          <option value="valorant">VALORANT</option>
-          <option value="other">その他（自由入力）</option>
-        </select>
-        <input type="text" id="game-custom" placeholder="ゲーム名を入力..." style="display:none;" autocomplete="off" />
-      </div>
-      <div class="config-row">
-        <label class="field-label">検索ルーティングモード</label>
-        <select id="search-mode" class="ui-select">
-          <option value="smart">スマート検索（最速自動判別）</option>
-          <option value="force-google">すべてGoogle検索を強制</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
   <main>
-    <header>
-      <h1>P.S.D</h1>
-      <button class="settings-btn" id="open-settings" title="設定">⚙️</button>
+    <header class="app-header">
+      <div><p class="eyebrow">DBD PLAYER SEARCH</p><h1>P.S.D</h1><p class="subtitle">DBD Player Search</p></div>
+      <nav class="header-actions" aria-label="アプリ操作">
+        <button id="open-history" class="icon-button" aria-label="履歴を開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2"/></svg></button>
+        <button id="open-settings" class="icon-button" aria-label="設定を開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M9 15v6"/></svg></button>
+      </nav>
     </header>
-
-    <label class="field-label">プレイヤー名入力</label>
-    <div class="names" id="names-container"></div>
-
-    <button type="button" id="btn-search" class="primary-btn">検索</button>
-    <div id="results-container"></div>
+    <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
+    <section id="install-banner" class="panel install-banner" aria-label="iOSでの利用案内" hidden>
+      <h2>ホーム画面から使えます</h2>
+      <p>Safariの共有メニューから「ホーム画面に追加」を選んでください。ホーム画面アプリはITPの7日制限の対象外ですが、データの永久保存は保証されません。移行前にバックアップしてください。</p>
+    </section>
+    <section class="panel" aria-labelledby="players-title">
+      <div class="section-heading"><h2 id="players-title">対象プレイヤー</h2><span id="slot-count" class="muted"></span></div>
+      <div id="names-container"></div>
+      <button id="add-player" class="button secondary full">＋ プレイヤーを追加</button>
+      <p class="hint">最大4人。表示名とアカウントIDは異なる場合があります。</p>
+    </section>
+    <button id="search" class="button primary full">一括検索</button>
+    <div class="search-context"><span id="active-settings"></span><span id="connection-status"></span></div>
+    <p class="hint">検索先の存在・本人一致は未確認です。API接続時は名前とゲーム名を検索サービスへ送信します。</p>
+    <section id="results" aria-label="プレイヤーごとの結果" aria-live="polite"></section>
+    <section class="panel steam-panel" aria-labelledby="steam-title">
+      <div class="section-heading"><h2 id="steam-title">SteamのBAN情報</h2><span class="badge">公式API</span></div>
+      <p class="hint">SteamID64かプロフィールURLで確認します。表示名だけでは特定できません。</p>
+      <label for="steam-target">SteamID64 / プロフィールURL</label>
+      <div class="steam-input"><input id="steam-target" type="text" maxlength="300" autocomplete="off" placeholder="https://steamcommunity.com/profiles/…"><button id="check-steam" class="button secondary">確認</button></div>
+      <label for="steam-name">比較するSteam表示名（任意）</label><input id="steam-name" type="text" maxlength="256" autocomplete="off" placeholder="名前の一致を比較する場合に入力">
+      <div id="steam-result" role="status" aria-live="polite"></div>
+    </section>
+    <footer><span id="app-version"></span><span id="offline-status"></span><p>検索情報の一致は、同一人物の証明ではありません。</p></footer>
+    <noscript><p>このアプリはJavaScriptを有効にすると使用できます。</p></noscript>
   </main>
-
-  <script>
-    (function () {
-      "use strict";
-
-      const MAX_SLOTS = 4;
-      const STORAGE_KEY = "player-check-pro-v2";
-      
-      const PLATFORMS = [
-        { id: "steam", name: "Steam", desc: "コミュニティプロフィール" },
-        { id: "x", name: "X (Twitter)", desc: "アカウント直撃" },
-        { id: "youtube", name: "YouTube", desc: "チャンネルホーム" },
-        { id: "twitch", name: "Twitch", desc: "配信チャンネル" },
-        { id: "tiktok", name: "TikTok", desc: "ユーザープロフィール" },
-        { id: "5ch", name: "5ちゃんねる", desc: "現行スレッド" }
-      ];
-
-      let appState = {
-        gameSelect: "dbd",
-        gameCustom: "",
-        searchMode: "smart",
-        inputs: [""],
-        results: []
-      };
-
-      function injectDynamicManifest() {
-        const manifestJSON = {
-          name: "P.S.D",
-          short_name: "P.S.D",
-          display: "standalone",
-          background_color: "#0c0d0f",
-          theme_color: "#0c0d0f",
-          icons: [
-            { src: "icon.png", sizes: "192x192 512x512", type: "image/png" }
-          ]
-        };
-        try {
-          const blob = new Blob([JSON.stringify(manifestJSON)], { type: "application/manifest+json" });
-          const link = document.createElement("link");
-          link.rel = "manifest";
-          link.href = URL.createObjectURL(blob);
-          document.head.appendChild(link);
-        } catch(e) {}
-      }
-
-      function getSafeUrl(urlStr) {
-        try {
-          const url = new URL(urlStr, window.location.origin);
-          if (url.protocol === "http:" || url.protocol === "https:") return url.href;
-        } catch (e) {}
-        return "about:blank";
-      }
-
-      function buildGoogleSearchUrl(query) {
-        return "https://www.google.com/search?q=" + encodeURIComponent(query);
-      }
-
-      // 【完全修復版】エラーゼロ・全SNSダイレクト対応ロジック
-      function generateLinks(playerName) {
-        const trimmedName = playerName.trim();
-        if (!trimmedName) return [];
-
-        let prefix = appState.gameSelect === "other" ? appState.gameCustom : appState.gameSelect;
-        prefix = prefix.trim() ? prefix.trim() + " " : "";
-        
-        // ハイフンやドットを含むID形式も正しく判定（YouTube等の新ハンドル対応）
-        const isHandle = /^[A-Za-z0-9_.-]+$/.test(trimmedName);
-
-        return PLATFORMS.map(function(platform) {
-          let targetUrl = "";
-          switch (platform.id) {
-            case "steam": 
-              targetUrl = "https://steamcommunity.com/search/users/?text=" + encodeURIComponent(trimmedName); 
-              break;
-            case "x": 
-              targetUrl = (appState.searchMode === "smart" && isHandle) 
-                ? "https://x.com/" + encodeURIComponent(trimmedName) 
-                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:x.com OR site:twitter.com"); 
-              break;
-            case "youtube": 
-              // IDなら直接チャンネルトップへ。日本語なら安全にGoogle検索。
-              targetUrl = (appState.searchMode === "smart" && isHandle)
-                ? "https://www.youtube.com/@" + encodeURIComponent(trimmedName)
-                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:youtube.com"); 
-              break;
-            case "twitch": 
-              targetUrl = (appState.searchMode === "smart" && isHandle) 
-                ? "https://www.twitch.tv/" + encodeURIComponent(trimmedName.toLowerCase()) 
-                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:twitch.tv"); 
-              break;
-            case "tiktok": 
-              // IDなら直接プロフィールへ。日本語なら安全にGoogle検索。
-              targetUrl = (appState.searchMode === "smart" && isHandle)
-                ? "https://www.tiktok.com/@" + encodeURIComponent(trimmedName)
-                : buildGoogleSearchUrl(trimmedName + " " + prefix + "site:tiktok.com"); 
-              break;
-            case "5ch": 
-              targetUrl = buildGoogleSearchUrl(trimmedName + " " + prefix + "site:5ch.net/test/read.cgi/"); 
-              break;
-          }
-          return { platformName: platform.name, desc: platform.desc, url: getSafeUrl(targetUrl) };
-        });
-      }
-
-      function saveState() {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); } catch (e) {}
-      }
-
-      function loadState() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed.gameSelect) appState.gameSelect = parsed.gameSelect;
-            if (parsed.gameCustom !== undefined) appState.gameCustom = parsed.gameCustom;
-            if (parsed.searchMode) appState.searchMode = parsed.searchMode;
-            if (Array.isArray(parsed.inputs) && parsed.inputs.length > 0) appState.inputs = parsed.inputs;
-            if (Array.isArray(parsed.results)) appState.results = parsed.results;
-          }
-        } catch (e) {}
-      }
-
-      function syncSettingsUI() {
-        const selectEl = document.getElementById("game-select");
-        const customEl = document.getElementById("game-custom");
-        
-        selectEl.value = appState.gameSelect;
-        customEl.value = appState.gameCustom;
-        customEl.style.display = appState.gameSelect === "other" ? "block" : "none";
-        document.getElementById("search-mode").value = appState.searchMode;
-      }
-
-      function handleSettingsChange() {
-        appState.gameSelect = document.getElementById("game-select").value;
-        appState.gameCustom = document.getElementById("game-custom").value;
-        appState.searchMode = document.getElementById("search-mode").value;
-        document.getElementById("game-custom").style.display = appState.gameSelect === "other" ? "block" : "none";
-        saveState();
-      }
-
-      function renderInputForm() {
-        const container = document.getElementById("names-container");
-        container.innerHTML = ""; 
-
-        appState.inputs.forEach(function(val, index) {
-          const row = document.createElement("div");
-          row.className = "name-row";
-
-          if (index === 0) {
-            const addBtn = document.createElement("button");
-            addBtn.className = "icon-btn add-btn";
-            addBtn.textContent = "＋";
-            addBtn.disabled = appState.inputs.length >= MAX_SLOTS;
-            addBtn.addEventListener("click", function() {
-              if (appState.inputs.length >= MAX_SLOTS) return;
-              updateInputs(); appState.inputs.push(""); renderInputForm(); saveState();
-            });
-            row.appendChild(addBtn);
-          } else {
-            const sp = document.createElement("div"); sp.className = "spacer"; row.appendChild(sp);
-          }
-
-          const input = document.createElement("input");
-          input.type = "text"; input.value = val; input.placeholder = "プレイヤー名を入力";
-          input.addEventListener("input", function() { updateInputs(); saveState(); });
-          row.appendChild(input);
-
-          if (index > 0) {
-            const rmBtn = document.createElement("button");
-            rmBtn.className = "icon-btn rm-btn"; rmBtn.textContent = "×";
-            rmBtn.addEventListener("click", function() {
-              updateInputs(); appState.inputs.splice(index, 1); renderInputForm(); saveState();
-            });
-            row.appendChild(rmBtn);
-          } else {
-            const sp2 = document.createElement("div"); sp2.className = "spacer"; row.appendChild(sp2);
-          }
-          container.appendChild(row);
-        });
-      }
-
-      function updateInputs() {
-        appState.inputs = Array.from(document.querySelectorAll("#names-container input[type='text']")).map(n => n.value);
-      }
-
-      function renderResults() {
-        const container = document.getElementById("results-container");
-        container.innerHTML = "";
-        if (appState.results.length === 0) {
-          const p = document.createElement("p"); p.className = "empty-msg"; p.textContent = "プレイヤー名を入力して検索をタップしてください。";
-          container.appendChild(p); return;
-        }
-
-        appState.results.forEach(function(block, bi) {
-          const bDiv = document.createElement("div"); bDiv.className = "player-block";
-          const hDiv = document.createElement("div"); hDiv.className = "player-block-header";
-          const h2 = document.createElement("h2"); h2.textContent = block.playerName;
-          const dBtn = document.createElement("button"); dBtn.className = "delete-block-btn"; dBtn.textContent = "削除";
-          dBtn.addEventListener("click", function() { appState.results.splice(bi, 1); renderResults(); saveState(); });
-          
-          hDiv.appendChild(h2); hDiv.appendChild(dBtn); bDiv.appendChild(hDiv);
-
-          const ul = document.createElement("ul"); ul.className = "result-list";
-          block.links.forEach(function(link) {
-            const li = document.createElement("li"); li.className = "result-item";
-            const a = document.createElement("a"); a.className = "card-link"; a.href = link.url; a.target = "_blank";
-            const tSpan = document.createElement("span"); tSpan.className = "card-title"; tSpan.textContent = link.platformName;
-            const hSpan = document.createElement("span"); hSpan.className = "card-hint"; hSpan.textContent = link.desc;
-            a.appendChild(tSpan); a.appendChild(hSpan); li.appendChild(a); ul.appendChild(li);
-          });
-          bDiv.appendChild(ul); container.appendChild(bDiv);
-        });
-      }
-
-      function executeSearch() {
-        updateInputs();
-        const valid = appState.inputs.map(n => n.trim()).filter(n => n !== "");
-        if (valid.length === 0) return;
-        appState.results = valid.map(name => ({ playerName: name, links: generateLinks(name) }));
-        renderResults(); saveState();
-        document.getElementById("results-container").scrollIntoView({ behavior: 'smooth' });
-      }
-
-      function init() {
-        injectDynamicManifest();
-        loadState();
-        syncSettingsUI();
-        renderInputForm();
-        renderResults();
-
-        document.getElementById("game-select").addEventListener("change", handleSettingsChange);
-        document.getElementById("game-custom").addEventListener("input", handleSettingsChange);
-        document.getElementById("search-mode").addEventListener("change", handleSettingsChange);
-        document.getElementById("btn-search").addEventListener("click", executeSearch);
-        
-        document.getElementById("open-settings").addEventListener("click", function() {
-          document.getElementById("settings-modal").style.display = "block";
-        });
-        document.getElementById("close-settings").addEventListener("click", function() {
-          document.getElementById("settings-modal").style.display = "none";
-        });
-      }
-
-      if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", init);
-      } else {
-          init();
-      }
-    })();
-  </script>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-heading"><h2 id="settings-title">設定</h2><button id="close-settings" class="button secondary" autofocus>完了</button></div>
+    <div class="field"><label for="game">対象ゲーム</label><select id="game"><option value="dbd">Dead by Daylight (DBD)</option><option value="apex">Apex Legends</option><option value="valorant">VALORANT</option><option value="other">その他（自由入力）</option><option value="">ゲーム名を付けない</option></select></div>
+    <div id="custom-game-field" class="field" hidden><label for="custom-game">ゲーム名</label><input id="custom-game" type="text" maxlength="80" autocomplete="off"></div>
+    <div class="field"><label for="mode">検索モード</label><select id="mode"><option value="smart">スマート検索</option><option value="force-google">6媒体すべてGoogle検索</option></select></div>
+    <p class="hint">スマート検索のID直リンクは存在未確認の候補です。GoogleモードではAPI自動検索を行いません。</p>
+    <hr>
+    <h3>データを守る</h3>
+    <p class="hint">履歴・入力・設定は端末内に保存します。ブラウザーの削除操作や保存領域の整理に備え、JSONを書き出してください。</p>
+    <div class="button-stack"><button id="export" class="button secondary">バックアップを書き出す</button><button id="import" class="button secondary">バックアップを読み込む</button><input id="import-file" type="file" accept="application/json,.json" hidden><button id="persist" class="button secondary">保存領域の保護をリクエスト</button></div>
+    <p id="storage-status" class="hint" role="status"></p>
+    <hr>
+    <a class="button secondary full" href="https://github.com/masaotokumoto12-ux/PlayerSearch-DBD/issues/new" target="_blank" rel="noopener noreferrer">不具合報告の画面を開く</a>
+    <button id="update" class="button secondary full">アプリの更新を確認</button>
+    <p id="update-status" class="hint" role="status">このアプリのService Workerだけを更新します。</p>
+  </dialog>
+  <dialog id="history-dialog" aria-labelledby="history-title">
+    <div class="dialog-heading"><h2 id="history-title">履歴</h2><button id="close-history" class="button secondary" autofocus>完了</button></div>
+    <label for="history-filter">名前で絞り込む</label><input id="history-filter" type="search" autocomplete="off" placeholder="名前で検索">
+    <p class="hint">最大100件。名前を選ぶと入力に戻ります。</p>
+    <div id="history-list" class="history-list"></div>
+    <button id="clear-history" class="button danger full">全履歴を削除</button>
+  </dialog>
 </body>
 </html>
