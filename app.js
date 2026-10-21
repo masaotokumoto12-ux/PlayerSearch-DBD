@@ -1,4 +1,4 @@
-const VERSION = '3.2.1';
+const VERSION = '3.2.2';
 const SCHEMA = 4;
 const STORAGE_KEY = 'psd-core-v4';
 const MAX_PLAYERS = 4;
@@ -365,44 +365,19 @@ function renderCandidates(target, key) {
   }
 }
 function renderResults() {
-  const blocks = state.resultNames.map((name, index) => {
-    const key = `${index}:${name}`, block = el('article', 'panel player-block');
-    const header = el('div', 'player-header'); header.append(el('h2', '', name), button('閉じる', 'secondary', () => {
-      invalidateSearch(); state.resultNames.splice(index, 1); persist(); renderResults();
-    }, `${name}の結果を閉じる`)); block.append(header, el('p', 'hint', settingsLabel()));
-    const candidateArea = el('div'); renderCandidates(candidateArea, key); block.append(candidateArea);
-    const ordinary = el('div', 'search-tools');
-    ordinary.append(link('まず名前だけでGoogle検索', `https://www.google.com/search?q=${encodeURIComponent(searchQuery(state, name, null, false))}`));
-    if (gamePrefix(state)) ordinary.append(link('ゲーム名を加えて検索', `https://www.google.com/search?q=${encodeURIComponent(searchQuery(state, searchIdentity(name).value))}`));
-    block.append(ordinary);
-    const details = el('details'); details.open = !apiBase || state.mode === 'force-google' || !!candidateGroups.get(key)?.error;
-    details.append(el('summary', '', '媒体別に検索する'));
-    details.append(el('p', 'hint', '検索先へのリンクです。発見済みのアカウントではありません。'));
-    const routeGrid = el('div', 'route-grid');
+  const blocks = state.resultNames.map(name => {
+    const block = el('article', 'player-block knight-result');
+    block.append(el('h2', 'result-player-name', name));
+    const media = el('nav', 'media-grid');
+    media.setAttribute('aria-label', `${name}の媒体別検索先`);
+    // Keep generateLinks and all search execution unchanged; simplify presentation only.
     for (const route of generateLinks(state, name)) {
-      const row = el('section', 'route');
-      const routeHeader = el('div', 'route-heading');
-      routeHeader.append(el('h3', '', route.name), el('span', 'badge', '未確認'));
-      const mainLink = link(state.mode === 'force-google' || route.id === '5ch' ? 'Googleで検索 ↗' : '名前で検索 ↗', route.url);
-      mainLink.className = 'route-primary';
-      mainLink.setAttribute('aria-label', `${route.name}：${mainLink.textContent}`);
-      row.append(routeHeader, mainLink);
-      const extra = el('details', 'route-extra');
-      extra.append(el('summary', '', 'ほかの探し方'));
-      if (route.fallback !== route.url) extra.append(link('Googleで検索', route.fallback));
-      if (route.contextual !== route.fallback) extra.append(link('ゲーム名も含める', route.contextual));
-      if (state.mode === 'smart' && route.profile) extra.append(link('ID候補を開く（未確認）', route.profile));
-      row.append(extra); routeGrid.append(row);
+      const destination = link(route.name, route.url);
+      destination.className = `media-link media-${route.id}`;
+      destination.setAttribute('aria-label', `${name}を${route.name}で検索（新しいタブ）`);
+      media.append(destination);
     }
-    details.append(routeGrid);
-    block.append(details);
-    const variants = nameVariants(name).slice(1);
-    if (variants.length) {
-      const alternative = el('div', 'search-tools');
-      alternative.append(el('p', 'hint', '記号・全角半角を変えた検索（別名の可能性があります）'));
-      for (const variant of variants) alternative.append(link(`「${variant}」を検索`, `https://www.google.com/search?q=${encodeURIComponent(searchQuery(state, variant, null, false))}`));
-      block.append(alternative);
-    }
+    block.append(media);
     return block;
   });
   $('results').replaceChildren(...blocks);

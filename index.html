@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; connect-src 'self' https:; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
-  <meta name="psd-version" content="3.2.1">
+  <meta name="psd-version" content="3.2.2">
   <meta name="theme-color" content="#0c0d0f">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,13 +15,13 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./styles.css?v=3.2.1">
-  <script type="module" src="./app.js?v=3.2.1"></script>
+  <link rel="stylesheet" href="./styles.css?v=3.2.2">
+  <script type="module" src="./app.js?v=3.2.2"></script>
 </head>
 <body>
   <main>
     <header class="app-header">
-      <div class="brand"><h1>P.S.D</h1><p class="subtitle">Player Search DBD</p></div>
+      <div class="brand"><img class="knight-crest" src="./icons/knight-crest.svg" alt="" aria-hidden="true"><h1>P.S.D</h1><p class="subtitle">Player Search DBD</p></div>
       <nav class="header-actions" aria-label="アプリ操作">
         <button id="open-history" class="icon-button" aria-label="履歴を開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2"/></svg></button>
         <button id="open-settings" class="icon-button" aria-label="設定を開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M9 15v6"/></svg></button>
@@ -39,9 +39,7 @@
       <p class="hint">最大4人。表示名とアカウントIDは異なる場合があります。</p>
     </section>
     <button id="search" class="button primary full">検索</button>
-    <div class="search-context"><span id="active-settings"></span><span id="connection-status"></span></div>
-    <p class="hint">検索先の存在・本人一致は未確認です。API接続時は名前とゲーム名を検索サービスへ送信します。</p>
-    <section id="results" aria-label="プレイヤーごとの結果" aria-live="polite"></section>
+    <section id="results" aria-label="プレイヤーごとの検索先（本人一致は未確認）" aria-live="polite"></section>
     <section class="panel steam-panel" aria-labelledby="steam-title">
       <div class="section-heading"><h2 id="steam-title">SteamのBAN情報</h2><span class="badge">Steam限定</span></div>
       <p class="hint">SteamID64かプロフィールURLで確認します。表示名だけでは特定できません。</p>
@@ -57,6 +55,7 @@
   </main>
   <dialog id="settings-dialog" aria-labelledby="settings-title">
     <div class="dialog-heading"><h2 id="settings-title">設定</h2><button id="close-settings" class="button secondary" autofocus>完了</button></div>
+    <div class="search-context"><span id="active-settings"></span><span id="connection-status"></span></div>
     <div class="field"><label for="game">対象ゲーム</label><select id="game"><option value="dbd">Dead by Daylight (DBD)</option><option value="apex">Apex Legends</option><option value="valorant">VALORANT</option><option value="other">その他（自由入力）</option><option value="">ゲーム名を付けない</option></select></div>
     <div id="custom-game-field" class="field" hidden><label for="custom-game">ゲーム名</label><input id="custom-game" type="text" maxlength="80" autocomplete="off"></div>
     <div class="field"><label for="mode">検索モード</label><select id="mode"><option value="smart">スマート検索</option><option value="force-google">6媒体すべてGoogle検索</option></select></div>

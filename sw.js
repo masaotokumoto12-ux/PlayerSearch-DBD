@@ -1,14 +1,14 @@
 'use strict';
 
-const VERSION = '3.2.1';
+const VERSION = '3.2.2';
 const ROOT = new URL(self.registration.scope);
 // Cache Storage is shared by all repositories on a github.io origin.
 // Only remove this app's caches, identified by its complete scope path.
 const PREFIX = `psd:${encodeURIComponent(ROOT.pathname)}:`;
 const CACHE = `${PREFIX}${VERSION}`;
 const ASSETS = [
-  './index.html', './app.js?v=3.2.1', './styles.css?v=3.2.1',
-  './manifest.webmanifest', './IMG_8813.jpeg',
+  './index.html', './app.js?v=3.2.2', './styles.css?v=3.2.2',
+  './manifest.webmanifest', './IMG_8813.jpeg', './icons/knight-crest.svg',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'
 ].map(path => new URL(path, ROOT).href);
 const INDEX = new URL('./index.html', ROOT).href;
