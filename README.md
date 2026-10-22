@@ -1,40 +1,27 @@
-# P.S.D v3.4.5
+# P.S.D v3.4.6
 
-公開URL：https://masaotokumoto12-ux.github.io/PlayerSearch-DBD/
-共有URL：https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site
-
-GitHub Pagesと共有版は同じ画面を配信し、同じ検索サーバーへ接続します。
-このリポジトリは画面・画像・端末内保存だけです。検索生成や管理鍵は含めません。
-
-## 検索
+[アプリ](https://masaotokumoto12-ux.github.io/PlayerSearch-DBD/) / [共有版](https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site)
 
 最大4名、Steam・X・YouTube・Twitch・TikTok・5chの6媒体。
-まず名前・IDで探します。DBD語を本人ページの必須条件にしません。
-入力されたプロフィールURLやSteamID64は、スマート検索で直接開きます。
-YouTubeは @handle・channel・c・user の4形式に対応します。
-不正なID形式や、ヘルプ・動画・検索ページをプロフィールと誤認しないよう修正しました。
-表示名からプロフィールIDを決めつけません。
-YouTubeのチャンネル限定フィルターを外し、動画も含めて探します。
-媒体リンクが表示されても、本人・アカウント実在・DBD関連の確認済みを意味しません。
-自動本人判定、各媒体の全件検索、未発見媒体の自動非表示は未実装です。
+DBD関連検索を優先し、見つからない時だけ「検索を広げる」で従来の名前・ID検索へ切り替える。
+切替は取得済みURLを使い、追加通信しない。
+明示プロフィールURL・SteamID64はスマート検索で直接開く。
+リンク表示はアカウントの実在・本人一致・DBD関連の確認済みを意味しない。
 
-## 保存・更新
+同じ名前の検索先は10分再利用する。連打・重複送信・自動再試行を抑止する。
+新規の名前だけを自分のAPIへ送信し、媒体を押すまで外部検索しない。
+入力・履歴は端末内に保持し、戻る・再読込・復帰では検索を自動送信しない。
+履歴→バックアップ・更新で旧JSONも扱える。保存形式psd-core-v4を維持する。
 
-入力・履歴・検索先は端末内に保存します。旧psd-core-v4とバックアップを維持します。
-新規検索は通信が必要です。取得中に古いリンクを押せないようにしました。
-再読込やアプリ復帰から、自動で検索を送りません。
-履歴→バックアップ・更新からJSON読込・書出しと更新ができます。
-GitHubと共有URLの保存領域は別です。旧URLからJSONを書き出して移せます。
-旧アイコン・背景・config.jsonは旧キャッシュとの互換性のため保持しています。
+有料API・追加課金サービスは導入しない。既存ChatGPT契約の範囲だけを使う。
+現行Sitesは公開βの対象プラン内提供。将来の価格まで保証しない。
+検索処理と管理鍵はサーバーだけに置く。所有者専用管理画面は非公開を維持する。
+公開HTML/CSS/JavaScriptと過去のGit履歴は閲覧可能。
 
-## 管理とコード
+正本は [CANONICAL.md](./CANONICAL.md)。
+判断理由、制限の範囲、費用、検証は [SEARCH_POLICY_2026-10-23.md](./SEARCH_POLICY_2026-10-23.md) を参照。
 
-設定画面は公開版から削除しています。管理用Siteは所有者限定です。
-公開APIの接続先だけをindex.htmlのpsd-api-baseに記載します。
-サーバーは既知のGitHub OriginだけにCORSを許可し、管理APIは公開しません。
-配信HTML/CSS/JavaScriptは閲覧可能です。過去のGit履歴は消していません。
-
-## 検証
+## 確認
 
 ```sh
 node scripts/check.mjs
@@ -42,6 +29,5 @@ node --test tests/client-flow.test.mjs
 node scripts/audit-search.mjs
 ```
 
-サーバー側でも4名×6媒体、名前検索、入力URL、CORS、管理認証を検証します。
-媒体別の判定、未確認事項、再現手順は [SEARCH_AUDIT_2026-10-23.md](./SEARCH_AUDIT_2026-10-23.md) を参照してください。
-
+audit-searchは自分のAPIだけを検証する。外部検索結果の取得や管理設定変更は行わない。
+通常は4入力・1 POSTだけを確認する。20入力の拡張試験は --full を明示した時だけ行う。

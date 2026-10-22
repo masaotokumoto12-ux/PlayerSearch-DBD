@@ -36,10 +36,12 @@ cases.push(
   {input: 'https://help.x.com/sample_123'},
   {input: 'https://x.com/%2Fsearch'}
 );
+const smokeInputs = new Set(['MaKun_inkya','ヅオパン','https://www.youtube.com/c/YouTubeCreators','https://x.com/name-with.dot']);
+const selectedCases = process.argv.includes('--full') ? cases : cases.filter(item => smokeInputs.has(item.input));
 
 const batches = [];
-for (let offset = 0; offset < cases.length; offset += 4) {
-  const batch = cases.slice(offset, offset + 4);
+for (let offset = 0; offset < selectedCases.length; offset += 4) {
+  const batch = selectedCases.slice(offset, offset + 4);
   const response = await fetch(api, {
     method: 'POST', headers: {'Content-Type': 'application/json', Origin: origin},
     body: JSON.stringify({names: batch.map(item => item.input)}),
@@ -50,13 +52,24 @@ for (let offset = 0; offset < cases.length; offset += 4) {
   const value = await response.json();
   assert.equal(value.version, expectedVersion, 'The public API must serve the expected release.');
   assert.ok(['smart', 'force-google'].includes(value.settings?.mode));
+  assert.equal(value.settings.game,'dbd');
   assert.equal(value.results.length, batch.length);
   for (let index = 0; index < batch.length; index++) {
     const item = batch[index], result = value.results[index], query = item.query ?? item.input;
     assert.equal(result.name, item.input);
     assert.deepEqual(result.routes.map(route => route.id), ids);
     for (const route of result.routes) {
-      const url = new URL(route.url);
+      const related = new URL(route.url);
+      assert.equal(related.protocol,'https:');
+      if(value.settings.mode==='smart' && route.id===item.direct)assert.equal(route.url,item.directUrl??item.input);
+      else {
+        assert.equal(related.hostname,'www.google.com');
+        assert.equal(related.pathname,'/search');
+        assert.ok(related.searchParams.get('q').includes('Dead by Daylight'));
+        assert.ok(related.searchParams.get('q').endsWith(`"${query}" ${sites[route.id]}`));
+        assert.equal(route.scope,'dbd');
+      }
+      const url = new URL(route.broad);
       assert.equal(url.protocol, 'https:');
       assert.equal(url.username + url.password, '');
       if (value.settings.mode === 'force-google' || route.id === '5ch') {
@@ -64,7 +77,7 @@ for (let offset = 0; offset < cases.length; offset += 4) {
         assert.equal(url.pathname, '/search');
         assert.equal(url.searchParams.get('q'), `"${query}" ${sites[route.id]}`);
       } else if (route.id === item.direct) {
-        assert.equal(route.url, item.directUrl ?? item.input);
+        assert.equal(route.broad, item.directUrl ?? item.input);
       } else {
         const [host, pathname, key] = native[route.id];
         assert.equal(url.hostname, host);
@@ -80,7 +93,7 @@ for (let offset = 0; offset < cases.length; offset += 4) {
 const summary = {
   checkedAt: new Date().toISOString(), versions: [...new Set(batches.map(batch => batch.version))],
   modes: [...new Set(batches.map(batch => batch.settings.mode))],
-  inputs: cases.length, links: cases.length * ids.length, status: 'passed',
+  inputs: selectedCases.length, links: selectedCases.length * ids.length, apiPosts:batches.length, externalSearchRequests:0, status: 'passed',
   scope: 'URL generation, response order and CORS only; accounts and external search results remain unverified'
 };
 console.log(JSON.stringify(process.argv.includes('--json') ? {...summary, batches} : summary, null, 2));
