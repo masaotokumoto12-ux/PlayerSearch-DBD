@@ -36,7 +36,7 @@ function r(e) {
 }
 //#endregion
 //#region client/app.js
-var i = "3.4.4", a = 4, o = "psd-core-v4", s = 4, c = 256, l = Object.freeze([
+var i = "3.4.5", a = 4, o = "psd-core-v4", s = 4, c = 256, l = Object.freeze([
 	"dps-state",
 	"dps-core-v6",
 	"psd-core-v3",

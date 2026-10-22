@@ -1,4 +1,4 @@
-# P.S.D v3.4.4
+# P.S.D v3.4.5
 
 公開URL：https://masaotokumoto12-ux.github.io/PlayerSearch-DBD/
 共有URL：https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site
@@ -11,6 +11,8 @@ GitHub Pagesと共有版は同じ画面を配信し、同じ検索サーバー�
 最大4名、Steam・X・YouTube・Twitch・TikTok・5chの6媒体。
 まず名前・IDで探します。DBD語を本人ページの必須条件にしません。
 入力されたプロフィールURLやSteamID64は、スマート検索で直接開きます。
+YouTubeは @handle・channel・c・user の4形式に対応します。
+不正なID形式や、ヘルプ・動画・検索ページをプロフィールと誤認しないよう修正しました。
 表示名からプロフィールIDを決めつけません。
 YouTubeのチャンネル限定フィルターを外し、動画も含めて探します。
 媒体リンクが表示されても、本人・アカウント実在・DBD関連の確認済みを意味しません。
@@ -37,6 +39,9 @@ GitHubと共有URLの保存領域は別です。旧URLからJSONを書き出し�
 ```sh
 node scripts/check.mjs
 node --test tests/client-flow.test.mjs
+node scripts/audit-search.mjs
 ```
 
 サーバー側でも4名×6媒体、名前検索、入力URL、CORS、管理認証を検証します。
+媒体別の判定、未確認事項、再現手順は [SEARCH_AUDIT_2026-10-23.md](./SEARCH_AUDIT_2026-10-23.md) を参照してください。
+
