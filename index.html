@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; connect-src 'self' https:; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
-  <meta name="psd-version" content="3.3.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; connect-src 'self' https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="psd-api-base" content="https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site/api/">
+  <meta name="psd-version" content="3.4.4">
   <meta name="theme-color" content="#0c0d0f">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,10 +14,10 @@
   <meta name="referrer" content="no-referrer">
   <title>P.S.D — DBD Player Search</title>
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./icons/icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="./styles.css?v=3.3.0">
-  <script type="module" src="./app.js?v=3.3.0"></script>
+  <link rel="icon" href="./icons/knight-detective-eye-192-v1.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icons/knight-detective-eye-180-v1.png">
+  <link rel="stylesheet" href="./styles.css?v=3.4.4">
+  <script type="module" src="./app.js?v=3.4.4"></script>
 </head>
 <body>
   <main>
@@ -24,7 +25,6 @@
       <div class="brand"><h1>P.S.D</h1><p class="subtitle">Player Search DBD</p></div>
       <nav class="header-actions" aria-label="アプリ操作">
         <button id="open-history" class="icon-button" aria-label="履歴を開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2"/></svg></button>
-        <button id="open-settings" class="icon-button" aria-label="設定を開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M9 15v6"/></svg></button>
       </nav>
     </header>
     <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
@@ -43,28 +43,20 @@
     <footer><span id="app-version"></span><span id="offline-status"></span><p>検索情報の一致は、同一人物の証明ではありません。</p></footer>
     <noscript><p>このアプリはJavaScriptを有効にすると使用できます。</p></noscript>
   </main>
-  <dialog id="settings-dialog" aria-labelledby="settings-title">
-    <div class="dialog-heading"><h2 id="settings-title">設定</h2><button id="close-settings" class="button secondary" autofocus>完了</button></div>
-    <div class="search-context"><span id="active-settings"></span><span id="connection-status"></span></div>
-    <div class="field"><label for="game">対象ゲーム</label><select id="game"><option value="dbd">Dead by Daylight (DBD)</option><option value="apex">Apex Legends</option><option value="valorant">VALORANT</option><option value="other">その他（自由入力）</option><option value="">ゲーム名を付けない</option></select></div>
-    <div id="custom-game-field" class="field" hidden><label for="custom-game">ゲーム名</label><input id="custom-game" type="text" maxlength="80" autocomplete="off"></div>
-    <div class="field"><label for="mode">検索モード</label><select id="mode"><option value="smart">スマート検索</option><option value="force-google">6媒体すべてGoogle検索</option></select></div>
-    <p class="hint">スマート検索はサービス内で名前を検索します。GoogleモードではAPI自動検索を行いません。</p>
-    <hr>
-    <h3>データを守る</h3>
-    <p class="hint">履歴・入力・設定は端末内に保存します。ブラウザーの削除操作や保存領域の整理に備え、JSONを書き出してください。</p>
+  <dialog id="data-dialog" aria-labelledby="data-title">
+    <div class="dialog-heading"><h2 id="data-title">バックアップ・更新</h2><button id="close-data" class="button secondary" autofocus>完了</button></div>
+    <p class="hint">入力と履歴は、この端末だけに保存します。旧アプリのJSONも読み込めます。</p>
     <div class="button-stack"><button id="export" class="button secondary">バックアップを書き出す</button><button id="import" class="button secondary">バックアップを読み込む</button><input id="import-file" type="file" accept="application/json,.json" hidden><button id="persist" class="button secondary">保存領域の保護をリクエスト</button></div>
-    <p id="storage-status" class="hint" role="status"></p>
-    <hr>
-    <a class="button secondary full" href="https://github.com/masaotokumoto12-ux/PlayerSearch-DBD/issues/new" target="_blank" rel="noopener noreferrer">不具合報告の画面を開く</a>
+    <p id="storage-status" class="hint" role="status"></p><hr>
     <button id="update" class="button secondary full">アプリの更新を確認</button>
-    <p id="update-status" class="hint" role="status">このアプリのService Workerだけを更新します。</p>
+    <p id="update-status" class="hint" role="status"></p>
   </dialog>
   <dialog id="history-dialog" aria-labelledby="history-title">
     <div class="dialog-heading"><h2 id="history-title">履歴</h2><button id="close-history" class="button secondary" autofocus>完了</button></div>
     <label for="history-filter">名前で絞り込む</label><input id="history-filter" type="search" autocomplete="off" placeholder="名前で検索">
     <p class="hint">最大100件。名前を選ぶと入力に戻ります。</p>
     <div id="history-list" class="history-list"></div>
+    <button id="open-data" class="button secondary full">バックアップ・更新</button>
     <button id="clear-history" class="button danger full">全履歴を削除</button>
   </dialog>
 </body>
