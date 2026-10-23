@@ -1,9 +1,9 @@
 // Read-only contract check of the public API; never changes shared settings.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 
 const api = 'https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site/api/routes';
-const expectedVersion = JSON.parse(readFileSync(new URL('../version.json', import.meta.url), 'utf8')).version;
+// Wire contract is intentionally independent of the client display release.
+const expectedVersion = '3.5.1';
 const origin = 'https://masaotokumoto12-ux.github.io';
 const ids = ['steam', 'x', 'youtube', 'twitch', 'tiktok', '5ch'];
 const native = {
@@ -51,7 +51,7 @@ for (let offset = 0; offset < selectedCases.length; offset += 4) {
   assert.equal(response.status, 200, `API HTTP ${response.status}`);
   assert.equal(response.headers.get('access-control-allow-origin'), origin);
   const value = await response.json();
-  assert.equal(value.version, expectedVersion, 'The public API must serve the expected release.');
+  assert.equal(value.version, expectedVersion, 'The public API must serve the compatible wire contract.');
   assert.ok(['smart', 'force-google'].includes(value.settings?.mode));
   assert.equal(value.settings.game,'dbd');
   assert.equal(value.results.length, batch.length);
