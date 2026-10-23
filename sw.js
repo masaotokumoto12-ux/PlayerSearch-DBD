@@ -1,13 +1,13 @@
 'use strict';
 
-const VERSION = '3.5.1';
+const VERSION = '3.5.2';
 const ROOT = new URL(self.registration.scope);
 // Cache Storage is shared by all repositories on a github.io origin.
 // Only remove this app's caches, identified by its complete scope path.
 const PREFIX = `psd:${encodeURIComponent(ROOT.pathname)}:`;
 const CACHE = `${PREFIX}${VERSION}`;
 const ASSETS = [
-  './index.html', './app.js?v=3.5.1', './styles.css?v=3.5.1',
+  './index.html', './app.js?v=3.5.2', './styles.css?v=3.5.2',
   './manifest.webmanifest', './assets/knight-castle.webp', './assets/iron-frame.svg',
   './icons/knight-detective-eye-192-v1.png', './icons/knight-detective-eye-512-v1.png', './icons/knight-detective-eye-180-v1.png'
 ].map(path => new URL(path, ROOT).href);

@@ -168,3 +168,37 @@ test('日別履歴の読込中に検索しても、既存の4回から5回目へ
   app.calls[0].resolve({...fixture(),results:fixture().results.slice(0,1)});await search;await ready(app);
   assert.equal(JSON.parse(app.saved.get('psd-core-v4')).history[0].count,5);
 });
+
+test('2MB超の自アプリのバックアップを別環境へ復元し、再出力内容を保つ',async()=>{
+  const history=Array.from({length:3500},(_,i)=>({id:'large-'+i,name:`${i}-`+'あ'.repeat(220),date:'2026-10-22',count:i%7+1}));
+  const original=await ready(harness(new Map([['psd-core-v4',JSON.stringify({schemaVersion:4,inputs:['One','Two'],history})]])));
+  original.nodes.get('export').fire('click');
+  const blob=original.downloads[0].blob;
+  assert.ok(blob.size>2_000_000);
+  const restored=await ready(harness());
+  restored.nodes.get('import-file').files=[blob];
+  await restored.nodes.get('import-file').fire('change');await ready(restored);
+  restored.nodes.get('export').fire('click');
+  const before=JSON.parse(await blob.text()),after=JSON.parse(await restored.downloads[0].blob.text());
+  assert.deepEqual(after.state.inputs,before.state.inputs);
+  assert.deepEqual(after.state.history,before.state.history);
+  assert.equal(restored.calls.length,0);
+});
+test('player-check-v3のnameSlotsを移行し、原本と現行入力を維持する',async()=>{
+  const raw=JSON.stringify({nameSlots:['One','Two','Three','Four','Five'],history:[{name:'old',date:'2026-10-22',count:3}]});
+  const app=await ready(harness(new Map([['player-check-v3',raw]])));
+  assert.equal(app.saved.get('player-check-v3'),raw);
+  assert.deepEqual(JSON.parse(app.saved.get('psd-core-v4')).inputs,['One','Two','Three','Four']);
+  app.nodes.get('name-0').value='Current';app.nodes.get('name-0').fire('input');
+  const reloaded=await ready(harness(app.saved));
+  assert.equal(reloaded.nodes.get('name-0').value,'Current');
+  assert.equal(reloaded.calls.length,0);
+});
+test('不正なバックアップは現在の入力と保存データを置き換えない',async()=>{
+  const app=await ready(harness());app.nodes.get('name-0').value='Keep';app.nodes.get('name-0').fire('input');
+  const before=app.saved.get('psd-core-v4');
+  for(const text of ['{invalid','{"state":{"inputs":[],"history":[],"schemaVersion":99}}']){
+    app.nodes.get('import-file').files=[new Blob([text])];await app.nodes.get('import-file').fire('change');
+    assert.equal(app.saved.get('psd-core-v4'),before);assert.equal(app.nodes.get('name-0').value,'Keep');
+  }
+});

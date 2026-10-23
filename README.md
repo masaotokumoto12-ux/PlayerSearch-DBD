@@ -1,4 +1,4 @@
-# P.S.D v3.5.1
+# P.S.D v3.5.2
 
 [アプリ](https://masaotokumoto12-ux.github.io/PlayerSearch-DBD/) / [共有版](https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site)
 
@@ -33,3 +33,7 @@ node scripts/audit-search.mjs
 ```
 
 audit-searchは自分のAPIへ通常4入力・1 POSTだけ送る。外部検索は実行しない。
+
+
+認証と今回の改善は [AUTHENTICATION.md](./AUTHENTICATION.md)。
+表示版v3.5.2、検索通信契約v3.5.1。既存の検索先と固定待機値を維持。

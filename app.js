@@ -136,7 +136,7 @@ function d(e, t = () => Date.now()) {
 //#endregion
 //#region client/history-files.mjs
 var f = "psd-history-day-v1", p = "psd-history-files-v1", m = "undated";
-function ee(e) {
+function h(e) {
 	let t = /* @__PURE__ */ new Map();
 	for (let n of i(e)) {
 		let e = n.date || m;
@@ -153,7 +153,7 @@ function ee(e) {
 		}, null, 2)
 	}));
 }
-function h(e) {
+function g(e) {
 	return (Array.isArray(e) ? e : []).flatMap((e) => {
 		try {
 			let t = JSON.parse(e.text);
@@ -163,7 +163,7 @@ function h(e) {
 		}
 	});
 }
-function te(e, t) {
+function ee(e, t) {
 	let n, r = Promise.resolve(), i = [], a = () => n ??= new Promise((e, n) => {
 		if (!t) {
 			n(/* @__PURE__ */ Error("IndexedDB unavailable"));
@@ -184,7 +184,7 @@ function te(e, t) {
 		try {
 			let t = JSON.parse(e?.getItem(p) || "[]");
 			return {
-				entries: h(Array.isArray(t) ? t : t.files),
+				entries: g(Array.isArray(t) ? t : t.files),
 				replace: t?.replace === !0
 			};
 		} catch {
@@ -203,10 +203,10 @@ function te(e, t) {
 			u = await new Promise((e, i) => {
 				let a = t.transaction("files", "readwrite"), o = a.objectStore("files"), s, c = o.getAll();
 				c.onsuccess = () => {
-					s = ee([
+					s = h([
 						...r,
 						...l,
-						...n ? [] : h(c.result)
+						...n ? [] : g(c.result)
 					]), n && o.clear();
 					let e = new Map(c.result.map((e) => [e.key, e.text]));
 					for (let t of s) (n || e.get(t.key) !== t.text) && o.put(t);
@@ -216,7 +216,7 @@ function te(e, t) {
 				e?.removeItem(p);
 			} catch {}
 		} catch {
-			u = ee([...r, ...l]);
+			u = h([...r, ...l]);
 			try {
 				if (!e) throw Error();
 				e.setItem(p, JSON.stringify({
@@ -224,14 +224,14 @@ function te(e, t) {
 					replace: n
 				}));
 			} catch {
-				return i = h(u), {
+				return i = g(u), {
 					files: u,
 					entries: i,
 					persisted: !1
 				};
 			}
 		}
-		return i = h(u), {
+		return i = g(u), {
 			files: u,
 			entries: i,
 			persisted: !0
@@ -244,29 +244,30 @@ function te(e, t) {
 }
 //#endregion
 //#region client/app.js
-var g = "3.5.1", _ = 4, v = "psd-core-v4", y = 4, ne = 256, b = Object.freeze([
+var _ = "3.5.1", v = "3.5.2", y = 4, te = "psd-core-v4", b = 4, ne = 256, x = Object.freeze([
 	"dps-state",
 	"dps-core-v6",
 	"psd-core-v3",
 	"player-check-pro-v2",
+	"player-check-v3",
 	"psd_history"
-]), x = (e) => e && typeof e == "object" && !Array.isArray(e), S = (e) => {
+]), S = (e) => e && typeof e == "object" && !Array.isArray(e), C = (e) => {
 	if (typeof e.isWellFormed == "function") return e.isWellFormed();
 	try {
 		return !0;
 	} catch {
 		return !1;
 	}
-}, C = new Set([
+}, w = new Set([
 	"dbd",
 	"apex",
 	"valorant",
 	"other",
 	""
-]), w = new Set(["smart", "force-google"]), re = (e) => typeof e == "string" && e.trim().length > 0 && [...e].length <= ne && S(e);
-function T() {
+]), T = new Set(["smart", "force-google"]), re = (e) => typeof e == "string" && e.trim().length > 0 && [...e].length <= ne && C(e);
+function ie() {
 	return {
-		schemaVersion: _,
+		schemaVersion: y,
 		game: "dbd",
 		customGame: "",
 		mode: "smart",
@@ -277,37 +278,37 @@ function T() {
 	};
 }
 function E(e) {
-	let t = x(e?.settings) ? e.settings : {};
+	let t = S(e?.settings) ? e.settings : {};
 	return {
 		game: e?.game ?? e?.gameTitle ?? e?.gameSelect ?? t.game,
 		mode: e?.mode ?? e?.searchMode ?? e?.routing ?? t.routing,
 		customGame: e?.customGame ?? e?.gameCustom ?? t.customGame,
-		inputs: e?.inputs ?? e?.players ?? e?.names,
+		inputs: e?.inputs ?? e?.players ?? e?.names ?? e?.nameSlots,
 		resultNames: e?.resultNames ?? e?.results
 	};
 }
 function D(e) {
-	let t = T();
-	if (!x(e)) return t;
+	let t = ie();
+	if (!S(e)) return t;
 	let n = E(e);
-	return C.has(n.game) && (t.game = n.game), w.has(n.mode) && (t.mode = n.mode), typeof n.customGame == "string" && [...n.customGame].length <= 80 && S(n.customGame) && (t.customGame = n.customGame), Array.isArray(n.inputs) && (t.inputs = n.inputs.filter((e) => typeof e == "string" && [...e].length <= ne && S(e)).slice(0, y), t.inputs.length || (t.inputs = [""])), Array.isArray(n.resultNames) && (t.resultNames = n.resultNames.map((e) => typeof e == "string" ? e : x(e) ? e.playerName ?? e.name : null).filter(re).slice(0, y).map((e) => e.trim())), t.history = i(e.history), t.migratedLegacyKeys = Array.isArray(e.migratedLegacyKeys) ? [...new Set(e.migratedLegacyKeys.filter((e) => b.includes(e)))] : [], e.migratedLegacyHistory === !0 && !t.migratedLegacyKeys.includes("psd_history") && t.migratedLegacyKeys.push("psd_history"), t;
+	return w.has(n.game) && (t.game = n.game), T.has(n.mode) && (t.mode = n.mode), typeof n.customGame == "string" && [...n.customGame].length <= 80 && C(n.customGame) && (t.customGame = n.customGame), Array.isArray(n.inputs) && (t.inputs = n.inputs.filter((e) => typeof e == "string" && [...e].length <= ne && C(e)).slice(0, b), t.inputs.length || (t.inputs = [""])), Array.isArray(n.resultNames) && (t.resultNames = n.resultNames.map((e) => typeof e == "string" ? e : S(e) ? e.playerName ?? e.name : null).filter(re).slice(0, b).map((e) => e.trim())), t.history = i(e.history), t.migratedLegacyKeys = Array.isArray(e.migratedLegacyKeys) ? [...new Set(e.migratedLegacyKeys.filter((e) => x.includes(e)))] : [], e.migratedLegacyHistory === !0 && !t.migratedLegacyKeys.includes("psd_history") && t.migratedLegacyKeys.push("psd_history"), t;
 }
-function ie(e) {
+function ae(e) {
 	let t = [], n = [], r;
 	try {
-		r = e.getItem(v);
+		r = e.getItem(te);
 	} catch {
 		return {
-			state: T(),
+			state: ie(),
 			warnings: ["保存領域を読み込めません。入力は画面に保持します。"],
 			needsSave: !1
 		};
 	}
-	let a = T(), o = !1, s;
+	let a = ie(), o = !1, s;
 	if (r != null) try {
 		let e = JSON.parse(r);
-		if (!x(e)) throw Error();
-		if (e.schemaVersion > _) return {
+		if (!S(e)) throw Error();
+		if (e.schemaVersion > y) return {
 			state: a,
 			warnings: ["新しい形式の保存データがあります。上書き防止のため保存を停止しています。"],
 			blocked: !0,
@@ -323,7 +324,7 @@ function ie(e) {
 		};
 	}
 	let c = new Set(a.migratedLegacyKeys);
-	for (let r of b) if (!c.has(r)) try {
+	for (let r of x) if (!c.has(r)) try {
 		let t = e.getItem(r);
 		if (t != null) {
 			let e = JSON.parse(t);
@@ -331,7 +332,7 @@ function ie(e) {
 				if (!Array.isArray(e)) throw Error();
 				n.push({ history: e });
 			} else {
-				if (!x(e)) throw Error();
+				if (!S(e) || r === "player-check-v3" && !Array.isArray(e.nameSlots)) throw Error();
 				n.push(e);
 			}
 		}
@@ -350,16 +351,16 @@ function ie(e) {
 	if (!o) {
 		let e = n.map(E), r = (t, n) => e.map((e) => e[t]).find(n);
 		a = D({
-			game: r("game", (e) => C.has(e)) ?? (C.has(l) ? l : "dbd"),
-			mode: r("mode", (e) => w.has(e)) ?? (w.has(d) ? d : "smart"),
+			game: r("game", (e) => w.has(e)) ?? (w.has(l) ? l : "dbd"),
+			mode: r("mode", (e) => T.has(e)) ?? (T.has(d) ? d : "smart"),
 			customGame: r("customGame", (e) => typeof e == "string"),
 			inputs: r("inputs", Array.isArray),
 			resultNames: r("resultNames", Array.isArray)
-		}), u && !w.has(d) && t.push("旧ダイレクトモード等は互換性がないため、スマート検索に戻しました。");
+		}), u && !T.has(d) && t.push("旧ダイレクトモード等は互換性がないため、スマート検索に戻しました。");
 	}
 	if (o) {
 		let e = E(s), t = n.map(E), r = (e, n) => t.map((t) => t[e]).find(n), i = {};
-		e.game === void 0 && (i.game = r("game", (e) => C.has(e))), e.mode === void 0 && (i.mode = r("mode", (e) => w.has(e))), e.customGame === void 0 && (i.customGame = r("customGame", (e) => typeof e == "string")), e.inputs === void 0 && (i.inputs = r("inputs", Array.isArray)), e.resultNames === void 0 && (i.resultNames = r("resultNames", Array.isArray));
+		e.game === void 0 && (i.game = r("game", (e) => w.has(e))), e.mode === void 0 && (i.mode = r("mode", (e) => T.has(e))), e.customGame === void 0 && (i.customGame = r("customGame", (e) => typeof e == "string")), e.inputs === void 0 && (i.inputs = r("inputs", Array.isArray)), e.resultNames === void 0 && (i.resultNames = r("resultNames", Array.isArray));
 		for (let e of Object.keys(i)) i[e] === void 0 && delete i[e];
 		a = D({
 			...a,
@@ -373,19 +374,19 @@ function ie(e) {
 		needsSave: o || n.length > 0 || l !== null || u !== null
 	};
 }
-function ae(e, t) {
+function oe(e, t) {
 	try {
-		return e.setItem(v, JSON.stringify(D(t))), !0;
+		return e.setItem(te, JSON.stringify(D(t))), !0;
 	} catch {
 		return !1;
 	}
 }
-function oe(e) {
-	let t = JSON.parse(e), n = x(t?.state) ? t.state : t;
-	if (!x(n) || !Array.isArray(E(n).inputs) || !Array.isArray(n.history)) throw Error("P.S.Dのバックアップ形式ではありません。");
-	if (n.schemaVersion > _) throw Error("新しい形式のため、この版では読めません。");
+function se(e) {
+	let t = JSON.parse(e), n = S(t?.state) ? t.state : t;
+	if (!S(n) || !Array.isArray(E(n).inputs) || !Array.isArray(n.history)) throw Error("P.S.Dのバックアップ形式ではありません。");
+	if (n.schemaVersion > y) throw Error("新しい形式のため、この版では読めません。");
 	let r = D(n);
-	return r.migratedLegacyKeys = [...b], r;
+	return r.migratedLegacyKeys = [...x], r;
 }
 var O = (e) => document.getElementById(e);
 function k(e, t, n) {
@@ -396,38 +397,38 @@ function A(e, t, n, r) {
 	let i = k("button", `button ${t}`, e);
 	return i.type = "button", r && i.setAttribute("aria-label", r), i.addEventListener("click", n), i;
 }
-function se(e, t) {
+function ce(e, t) {
 	let n = k("a", "", e);
 	return n.href = t, n.target = "_blank", n.rel = "noopener noreferrer", n.referrerPolicy = "no-referrer", n.addEventListener("click", (e) => {
-		let n = new URL(t).hostname, r = fe.get(n) ?? -Infinity;
+		let n = new URL(t).hostname, r = pe.get(n) ?? -Infinity;
 		if (Date.now() - r < 2e3) {
 			e.preventDefault(), q("連続して開く操作を止めました。少し間をあけてください。");
 			return;
 		}
-		fe.set(n, Date.now());
+		pe.set(n, Date.now());
 	}), n;
 }
 var j;
 try {
 	j = window.localStorage;
 } catch {}
-var M = ie(j), ce = document.querySelector("meta[name=\"psd-api-base\"]")?.content, N = M.state, P = M.blocked ?? !1, le = new URL(ce || "./api/", document.baseURI).href, F, I = 0, L = !1, ue = new Set(M.warnings), de = /* @__PURE__ */ new Map(), R = /* @__PURE__ */ new Set(), z = "psd-shared-routes-v2", B = /* @__PURE__ */ new Map(), V = /* @__PURE__ */ new Map(), fe = /* @__PURE__ */ new Map(), H = d(j), pe = te(j, globalThis.indexedDB), U = 0, me, W = [], he = P, ge, G = !1, K = !1;
+var M = ae(j), le = document.querySelector("meta[name=\"psd-api-base\"]")?.content, N = M.state, P = M.blocked ?? !1, ue = new URL(le || "./api/", document.baseURI).href, F, I = 0, L = !1, de = new Set(M.warnings), fe = /* @__PURE__ */ new Map(), R = /* @__PURE__ */ new Set(), z = "psd-shared-routes-v2", B = /* @__PURE__ */ new Map(), V = /* @__PURE__ */ new Map(), pe = /* @__PURE__ */ new Map(), H = d(j), me = ee(j, globalThis.indexedDB), U = 0, he, W = [], ge = P, _e, G = !1, K = !1;
 try {
 	let e = JSON.parse(j?.getItem(z) || "null");
-	if (e?.version === g && Array.isArray(e.entries)) for (let t of e.entries.slice(-100)) {
+	if (e?.version === _ && Array.isArray(e.entries)) for (let t of e.entries.slice(-100)) {
 		if (!Number.isFinite(t?.savedAt)) continue;
 		let e = l([t])[0];
 		e?.routes.length === 6 && (B.set(e.name, e.routes), V.set(e.name, t.savedAt));
 	}
 } catch {}
-function _e() {
+function ve() {
 	for (; B.size > 100;) {
 		let e = B.keys().next().value;
 		B.delete(e), V.delete(e);
 	}
 	try {
 		j?.setItem(z, JSON.stringify({
-			version: g,
+			version: _,
 			entries: [...B].map(([e, t]) => ({
 				name: e,
 				routes: t,
@@ -437,12 +438,12 @@ function _e() {
 	} catch {}
 }
 function q(e) {
-	ue.add(e), O("notice").textContent = [...ue].join("\n"), O("notice").hidden = !1;
+	de.add(e), O("notice").textContent = [...de].join("\n"), O("notice").hidden = !1;
 }
 for (let e of M.warnings) q(e);
 function J() {
 	if (P) return !1;
-	let e = ae(j, N);
+	let e = oe(j, N);
 	return e || q("端末への保存に失敗しました。入力は画面に残ります。バックアップを書き出してください。"), e;
 }
 M.needsSave && J();
@@ -451,7 +452,7 @@ function Y() {
 }
 function X({ replace: e = !1 } = {}) {
 	let t = U;
-	return pe.sync(Y(), { replace: e }).then((e) => {
+	return me.sync(Y(), { replace: e }).then((e) => {
 		if (t !== U) return;
 		let r = i([...N.history, ...e.entries]);
 		if (e.persisted) {
@@ -461,13 +462,13 @@ function X({ replace: e = !1 } = {}) {
 		P || J(), e.persisted || q("履歴を端末内に保存できません。バックアップを書き出してください。"), $();
 	}).catch(() => q("履歴を保存できません。バックアップを書き出してください。"));
 }
-P || (O("export").disabled = !0, O("search").disabled = !0, ge = X().finally(() => {
-	he = !0, O("export").disabled = !1, O("search").disabled = !1;
+P || (O("export").disabled = !0, O("search").disabled = !0, _e = X().finally(() => {
+	ge = !0, O("export").disabled = !1, O("search").disabled = !1;
 }));
-function ve() {
+function ye() {
 	I++;
 	for (let e of R) e.path === "routes" && e.controller.abort();
-	de.clear();
+	fe.clear();
 }
 function Z(e) {
 	let t = N.inputs.map((e, t) => {
@@ -477,12 +478,12 @@ function Z(e) {
 		return i.id = `name-${t}`, i.type = "text", i.value = e, i.placeholder = "プレイヤー名を入力", i.maxLength = 256, i.autocomplete = "off", i.spellcheck = !1, i.addEventListener("input", () => {
 			N.inputs[t] = i.value, J();
 		}), i.addEventListener("keydown", (e) => {
-			e.key === "Enter" && !e.isComposing && e.keyCode !== 229 && (e.preventDefault(), Se());
+			e.key === "Enter" && !e.isComposing && e.keyCode !== 229 && (e.preventDefault(), Ce());
 		}), n.append(r, i), N.inputs.length > 1 && n.append(A("×", "remove", () => {
 			N.inputs.splice(t, 1), J(), Z(Math.min(t, N.inputs.length - 1));
 		}, `プレイヤー${t + 1}の入力欄を削除`)), n;
 	});
-	O("names-container").replaceChildren(...t), O("slot-count").textContent = `${N.inputs.length} / ${y}`, O("add-player").disabled = N.inputs.length >= y, e !== void 0 && O(`name-${e}`)?.focus();
+	O("names-container").replaceChildren(...t), O("slot-count").textContent = `${N.inputs.length} / ${b}`, O("add-player").disabled = N.inputs.length >= b, e !== void 0 && O(`name-${e}`)?.focus();
 }
 function Q(e = !1) {
 	let t = N.resultNames.map((t) => {
@@ -491,18 +492,18 @@ function Q(e = !1) {
 		let r = k("nav", "media-grid");
 		r.setAttribute("aria-label", `${t}の媒体別検索先`);
 		for (let n of e ? [] : B.get(t) ?? []) {
-			let e = se(n.name, K ? n.broad : n.url);
+			let e = ce(n.name, K ? n.broad : n.url);
 			e.className = `media-link media-${n.id}`, e.setAttribute("aria-label", `${t}を${n.name}で${!K && n.scope === "dbd" ? "DBD関連検索" : n.scope === "profile" ? "ID・URLを開く・DBD関連未確認" : "検索"}（新しいタブ）`), r.append(e);
 		}
 		return n.append(r), r.childElementCount || n.append(k("p", "hint", e ? "検索先を準備中…" : "検索ボタンで検索先を準備できます。")), n;
 	});
 	O("results").replaceChildren(...t), O("expand-search").hidden = e || !N.resultNames.some((e) => B.get(e)?.some((e) => e.broad !== e.url)), O("expand-search").textContent = K ? "DBD関連に戻す" : "検索を広げる", O("expand-search").setAttribute("aria-pressed", String(K));
 }
-function ye() {
+function be() {
 	return matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 }
-async function be(e, t) {
-	if (!le) throw Error("APIサーバー未接続です。配布版READMEの設定手順を確認してください。");
+async function xe(e, t) {
+	if (!ue) throw Error("APIサーバー未接続です。配布版READMEの設定手順を確認してください。");
 	let n = new AbortController(), r = {
 		path: e,
 		controller: n
@@ -510,7 +511,7 @@ async function be(e, t) {
 	R.add(r);
 	let i = setTimeout(() => n.abort(), 12e3);
 	try {
-		let r = await fetch(new URL(e, le), {
+		let r = await fetch(new URL(e, ue), {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(t),
@@ -526,7 +527,7 @@ async function be(e, t) {
 		} catch {
 			throw Error("APIからJSON形式の応答を取得できませんでした。");
 		}
-		if (!x(a)) throw Error("APIの応答形式が不正です。");
+		if (!S(a)) throw Error("APIの応答形式が不正です。");
 		if (!r.ok) throw Error(typeof a.error == "string" ? a.error : "APIサーバーで取得に失敗しました。");
 		return a;
 	} catch (e) {
@@ -535,7 +536,7 @@ async function be(e, t) {
 		clearTimeout(i), R.delete(r);
 	}
 }
-async function xe(e, t = {}, n = 8e3) {
+async function Se(e, t = {}, n = 8e3) {
 	let r = new AbortController(), i = setTimeout(() => r.abort(), n);
 	try {
 		return await fetch(e, {
@@ -546,12 +547,12 @@ async function xe(e, t = {}, n = 8e3) {
 		clearTimeout(i);
 	}
 }
-async function Se() {
-	if (!he) {
+async function Ce() {
+	if (!ge) {
 		if (G) return;
 		G = !0;
 		try {
-			await ge;
+			await _e;
 		} finally {
 			G = !1;
 		}
@@ -566,7 +567,7 @@ async function Se() {
 		return;
 	}
 	if ([...R].some((e) => e.path === "routes")) return;
-	ve();
+	ye();
 	let t = I;
 	K = !1, N.resultNames = e;
 	let r = [...new Set(e)].filter((e) => {
@@ -585,17 +586,17 @@ async function Se() {
 		return;
 	}
 	i(), O("search").disabled = !0, Q(!0), O("results").scrollIntoView({
-		behavior: ye(),
+		behavior: be(),
 		block: "start"
 	});
 	try {
-		let e = await be("routes", { names: r });
-		if (e.version !== g) throw Error("検索サーバーの更新中です。時間をおいてお試しください。");
+		let e = await xe("routes", { names: r });
+		if (e.version !== _) throw Error("検索サーバーの更新中です。時間をおいてお試しください。");
 		let n = l(e.results);
 		if (n.length !== r.length || n.some((e, t) => e.name !== r[t] || e.routes.length !== 6)) throw Error("検索先の応答形式を確認できませんでした。");
 		if (t !== I) return;
 		for (let e of n) B.delete(e.name), B.set(e.name, e.routes), V.set(e.name, Date.now());
-		x(e.settings) && (N.game = e.settings.game, N.mode = e.settings.mode, N.customGame = e.settings.customGame, J()), _e();
+		S(e.settings) && (N.game = e.settings.game, N.mode = e.settings.mode, N.customGame = e.settings.customGame, J()), ve();
 	} catch (e) {
 		t === I && q(e.message || "新しい検索には通信が必要です。入力と履歴は端末に残っています。");
 	} finally {
@@ -603,23 +604,23 @@ async function Se() {
 	}
 }
 function $() {
-	let e = O("history-filter").value.toLocaleLowerCase("ja-JP"), t = ee(Y()).filter((t) => JSON.parse(t.text).entries.some((t) => t.name.toLocaleLowerCase("ja-JP").includes(e)));
+	let e = O("history-filter").value.toLocaleLowerCase("ja-JP"), t = h(Y()).filter((t) => JSON.parse(t.text).entries.some((t) => t.name.toLocaleLowerCase("ja-JP").includes(e)));
 	O("history-days").replaceChildren(...t.length ? t.map((e) => {
-		let t = A("", "secondary history-day", () => Te(e.key));
-		return t.append(k("strong", "", Ce(e.key)), k("small", "", `${JSON.parse(e.text).entries.length}名`)), t;
-	}) : [k("p", "hint", e ? "一致する履歴はありません。" : "履歴はありません。")]), O("history-day-dialog").open && we();
+		let t = A("", "secondary history-day", () => Ee(e.key));
+		return t.append(k("strong", "", we(e.key)), k("small", "", `${JSON.parse(e.text).entries.length}名`)), t;
+	}) : [k("p", "hint", e ? "一致する履歴はありません。" : "履歴はありません。")]), O("history-day-dialog").open && Te();
 }
-function Ce(e) {
+function we(e) {
 	if (e === "undated") return "日付不明";
 	let [t, n, r] = e.split("-").map(Number);
 	return `${t}年${n}月${r}日`;
 }
-function we() {
-	let e = me;
-	O("history-day-title").textContent = `${Ce(e)}の検索履歴`;
+function Te() {
+	let e = he;
+	O("history-day-title").textContent = `${we(e)}の検索履歴`;
 	let r = Y().filter((t) => (t.date || "undated") === e).map((e) => {
 		let r = k("div", "history-item"), i = A("", "secondary history-pick", () => {
-			ve(), N.inputs = [e.name], N.resultNames = [], J(), Z(), Q(), O("history-day-dialog").close(), O("history-dialog").close(), O("name-0").focus();
+			ye(), N.inputs = [e.name], N.resultNames = [], J(), Z(), Q(), O("history-day-dialog").close(), O("history-dialog").close(), O("name-0").focus();
 		});
 		return i.append(k("span", "", e.name)), t(e.count) >= 2 && i.append(k("small", "repeat-search", `${e.count}回目の検索`)), r.append(i), e.date === n() && r.append(A("×", "remove", () => {
 			N.history = N.history.filter((t) => t.id !== e.id), W = W.filter((t) => t.id !== e.id), U++, J(), X({ replace: !0 }), $();
@@ -627,13 +628,13 @@ function we() {
 	});
 	O("history-day-list").replaceChildren(...r.length ? r : [k("p", "hint", "この日の履歴はありません。")]);
 }
-function Te(e) {
-	me = e, we(), O("history-day-dialog").showModal();
+function Ee(e) {
+	he = e, Te(), O("history-day-dialog").showModal();
 }
-function Ee() {
-	O("app-version").textContent = `v${g}`, O("add-player").addEventListener("click", () => {
-		N.inputs.length >= y || (N.inputs.push(""), J(), Z(N.inputs.length - 1));
-	}), O("search").addEventListener("click", Se), O("expand-search").addEventListener("click", () => {
+function De() {
+	O("app-version").textContent = `v${v}`, O("add-player").addEventListener("click", () => {
+		N.inputs.length >= b || (N.inputs.push(""), J(), Z(N.inputs.length - 1));
+	}), O("search").addEventListener("click", Ce), O("expand-search").addEventListener("click", () => {
 		K = !K, Q();
 	});
 	for (let e of ["data", "history"]) O(`open-${e}`).addEventListener("click", () => {
@@ -662,8 +663,8 @@ function Ee() {
 	}), O("export").addEventListener("click", () => {
 		let e = {};
 		if (P && j) for (let t of [
-			v,
-			...b,
+			te,
+			...x,
 			"psd_game",
 			"psd_routing"
 		]) try {
@@ -683,10 +684,10 @@ function Ee() {
 	}), O("import").addEventListener("click", () => O("import-file").click()), O("import-file").addEventListener("change", async (e) => {
 		let t = e.target.files?.[0];
 		if (t) try {
-			if (t.size > 2e6) throw Error("2MB以内のJSONを選んでください。");
-			let e = oe(await t.text());
+			O("storage-status").textContent = "バックアップを確認しています…";
+			let e = se(await t.text());
 			if (!confirm("バックアップの入力・設定・履歴で、このアプリの保存データを置き換えますか？")) return;
-			ve(), B.clear(), V.clear();
+			ye(), B.clear(), V.clear();
 			try {
 				j?.removeItem(z);
 			} catch {}
@@ -709,7 +710,7 @@ function Ee() {
 		} catch {
 			O("storage-status").textContent = "保存領域の保護を確認できませんでした。";
 		}
-	}), O("update").addEventListener("click", Oe);
+	}), O("update").addEventListener("click", ke);
 	let e = /iPad|iPhone|iPod/.test(navigator.userAgent) || /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
 	O("install-banner").hidden = !e || navigator.standalone === !0 || matchMedia("(display-mode: standalone)").matches;
 	let t = () => {
@@ -717,7 +718,7 @@ function Ee() {
 	};
 	addEventListener("online", t), addEventListener("offline", t), t();
 }
-async function De() {
+async function Oe() {
 	if (!("serviceWorker" in navigator) || !window.isSecureContext) {
 		q("この環境ではオフライン起動を準備できません。HTTPSまたはlocalhostを使用してください。");
 		return;
@@ -740,16 +741,16 @@ async function De() {
 		q("オフライン用データを準備できませんでした。オンラインの機能は使用できます。");
 	}
 }
-async function Oe() {
+async function ke() {
 	O("update").disabled = !0, O("update-status").textContent = "更新を確認中…";
 	try {
 		if (!navigator.onLine) throw Error("オフラインのため更新を確認できません。");
-		let e = await xe("./version.json", { cache: "no-store" });
+		let e = await Se("./version.json", { cache: "no-store" });
 		if (!e.ok) throw Error("バージョン情報を取得できませんでした。");
 		let t = await e.json();
 		if (!/^\d+\.\d+\.\d+$/.test(t.version)) throw Error("バージョン情報の形式が不正です。");
 		if (!F) {
-			t.version === g ? O("update-status").textContent = `最新版です（v${g}）。` : O("update-status").textContent = `v${t.version}があります。ページを再読み込みしてください。`;
+			t.version === v ? O("update-status").textContent = `最新版です（v${v}）。` : O("update-status").textContent = `v${t.version}があります。ページを再読み込みしてください。`;
 			return;
 		}
 		if (await F.update(), F.installing && await new Promise((e) => {
@@ -762,12 +763,12 @@ async function Oe() {
 			L = !0, F.waiting.postMessage({ type: "DPS_SKIP_WAITING" }), O("update-status").textContent = "このアプリの更新を適用中…", setTimeout(() => {
 				L && (O("update-status").textContent = "更新の切替を確認できませんでした。入力を保存してから、もう一度お試しください。");
 			}, 15e3);
-		} else O("update-status").textContent = t.version === g ? `最新版です（v${g}）。` : `v${t.version}があります。配信が完了してから再度確認してください。`;
+		} else O("update-status").textContent = t.version === v ? `最新版です（v${v}）。` : `v${t.version}があります。配信が完了してから再度確認してください。`;
 	} catch (e) {
 		O("update-status").textContent = e instanceof TypeError ? "通信できないため、更新を確認できませんでした。" : e.message || "更新を確認できませんでした。";
 	} finally {
 		O("update").disabled = !1;
 	}
 }
-Ee(), Z(), Q(), De();
+De(), Z(), Q(), Oe();
 //#endregion
