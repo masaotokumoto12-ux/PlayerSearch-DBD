@@ -15,6 +15,8 @@ assert.ok(html.includes('<meta name="psd-api-base" content="https://dbd-player-s
 assert.ok(html.includes("connect-src 'self' https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site"));
 for(const forbidden of ['id="open-settings"','settings-dialog','Steam BAN'])assert.ok(!html.includes(forbidden),forbidden);
 for(const forbidden of ['function generateLinks','function searchQuery','site:steamcommunity.com','steamcommunity.com/search/users','PSD_ADMIN_TOKEN','sourceMappingURL'])assert.ok(!client.includes(forbidden),forbidden);
+for(const id of ['history-days','history-day-dialog','history-day-list'])assert.ok(html.includes('id="'+id+'"'));
+for(const id of ['history-files','save-today-history','save-history-file','history-file-title'])assert.ok(!html.includes('id="'+id+'"'));
 const manifest=JSON.parse(read('manifest.webmanifest'));
 const refs=[...html.matchAll(/(?:src|href)="(\.\/[^"?#]+)[^"]*"/g)].map(m=>m[1]);
 refs.push(...manifest.icons.map(icon=>icon.src));

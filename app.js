@@ -1,12 +1,63 @@
+//#region lib/history-records.mjs
+var e = () => globalThis.crypto?.randomUUID?.() ?? `psd-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+function t(e) {
+	return Number.isSafeInteger(e) && e >= 1 ? e : 1;
+}
+function n(e = new Date(Date.now())) {
+	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
+}
+function r(e) {
+	let t = typeof e == "string" && /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(e);
+	if (!t) return null;
+	let [, n, r, i] = t.map(Number), a = new Date(Date.UTC(n, r - 1, i));
+	return n < 1900 || n > 9999 || a.getUTCFullYear() !== n || a.getUTCMonth() !== r - 1 || a.getUTCDate() !== i ? null : `${n}-${String(r).padStart(2, "0")}-${String(i).padStart(2, "0")}`;
+}
+function i(n) {
+	let i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Set();
+	for (let o of Array.isArray(n) ? n : []) {
+		let n = o?.name ?? o?.playerName ?? o?.query;
+		if (typeof n != "string" || !n.trim() || [...n].length > 256) continue;
+		let s = n.trim(), c = r(o.date), l = typeof o.id == "string" || typeof o.id == "number" && Number.isFinite(o.id) ? String(o.id) : "", u = JSON.stringify([
+			s,
+			c,
+			c ? "" : l || e()
+		]), d = t(o.count), f = i.get(u);
+		if (f) {
+			f.count = Math.max(f.count, d);
+			continue;
+		}
+		let p = l;
+		(!p || a.has(p)) && (p = e()), a.add(p), i.set(u, {
+			id: p,
+			name: s,
+			date: c,
+			count: d
+		});
+	}
+	return [...i.values()].sort((e, t) => (t.date ?? "").localeCompare(e.date ?? ""));
+}
+function a(t, r, a = n(), o = t.history) {
+	let s = new Map(i(o).filter((e) => e.date === a).map((e) => [e.name, e]));
+	t.history = i([...[...new Set(r.map((e) => e.trim()).filter(Boolean))].map((t) => {
+		let n = s.get(t);
+		return {
+			id: n?.id ?? e(),
+			name: t,
+			date: a,
+			count: n ? Math.min(2 ** 53 - 1, n.count + 1) : 1
+		};
+	}), ...t.history]);
+}
+//#endregion
 //#region client/route-cache.mjs
-var e = {
+var o = {
 	steam: "Steam",
 	x: "X (Twitter)",
 	youtube: "YouTube",
 	twitch: "Twitch",
 	tiktok: "TikTok",
 	"5ch": "5ちゃんねる"
-}, t = {
+}, s = {
 	steam: ["steamcommunity.com"],
 	x: ["x.com", "twitter.com"],
 	youtube: ["youtube.com", "youtu.be"],
@@ -14,44 +65,44 @@ var e = {
 	tiktok: ["tiktok.com"],
 	"5ch": ["5ch.net", "2ch.sc"]
 };
-function n(n) {
-	if (!Array.isArray(n)) return [];
-	let r = /* @__PURE__ */ new Set(), i = [];
-	for (let a of n.slice(0, 6)) if (!(!a || !Object.hasOwn(e, a.id) || r.has(a.id) || typeof a.url != "string")) try {
-		let n = (e) => {
-			let n = new URL(e);
-			return n.protocol === "https:" && !n.username && !n.password && !n.port && (a.id === "5ch" && n.hostname === "www.google.com" || t[a.id].some((e) => n.hostname === e || n.hostname.endsWith("." + e))) ? n.href : null;
-		}, o = n(a.url);
-		if (!o) continue;
-		let s = typeof a.broad == "string" ? n(a.broad) : o;
-		if (!s) continue;
-		r.add(a.id), i.push({
-			id: a.id,
-			name: e[a.id],
-			url: o,
-			broad: s,
+function c(e) {
+	if (!Array.isArray(e)) return [];
+	let t = /* @__PURE__ */ new Set(), n = [];
+	for (let r of e.slice(0, 6)) if (!(!r || !Object.hasOwn(o, r.id) || t.has(r.id) || typeof r.url != "string")) try {
+		let e = (e) => {
+			let t = new URL(e);
+			return t.protocol === "https:" && !t.username && !t.password && !t.port && (r.id === "5ch" && t.hostname === "www.google.com" || s[r.id].some((e) => t.hostname === e || t.hostname.endsWith("." + e))) ? t.href : null;
+		}, i = e(r.url);
+		if (!i) continue;
+		let a = typeof r.broad == "string" ? e(r.broad) : i;
+		if (!a) continue;
+		t.add(r.id), n.push({
+			id: r.id,
+			name: o[r.id],
+			url: i,
+			broad: a,
 			scope: [
 				"dbd",
 				"profile",
 				"name"
-			].includes(a.scope) ? a.scope : "name"
+			].includes(r.scope) ? r.scope : "name"
 		});
 	} catch {}
-	return i;
+	return n;
 }
-function r(e) {
+function l(e) {
 	return Array.isArray(e) ? e.slice(0, 4).filter((e) => e && typeof e.name == "string" && e.name.length <= 512).map((e) => ({
 		name: e.name,
-		routes: n(e.routes)
+		routes: c(e.routes)
 	})) : [];
 }
 //#endregion
 //#region client/search-guard.mjs
-var i = "psd-search-backoff-v1";
-function a(e, t = () => Date.now()) {
-	let n = 0, r = !1, a = -Infinity;
+var u = "psd-search-backoff-v1";
+function d(e, t = () => Date.now()) {
+	let n = 0, r = !1, i = -Infinity;
 	try {
-		let r = Number(e?.getItem(i));
+		let r = Number(e?.getItem(u));
 		Number.isFinite(r) && r > t() && (n = r);
 	} catch {}
 	return {
@@ -63,20 +114,20 @@ function a(e, t = () => Date.now()) {
 				ok: !1,
 				reason: "blocked",
 				until: n
-			} : t() - a < 2e3 ? {
+			} : t() - i < 2e3 ? {
 				ok: !1,
 				reason: "gap"
-			} : (r = !0, a = t(), { ok: !0 });
+			} : (r = !0, i = t(), { ok: !0 });
 		},
 		finish() {
 			r = !1;
 		},
-		pause(r, a) {
+		pause(r, i) {
 			if (![403, 429].includes(r)) return 0;
-			let o = r === 429 ? 3600 * 1e3 : 360 * 60 * 1e3, s = /^\d+$/.test(a || "") ? t() + Number(a) * 1e3 : Date.parse(a || "");
-			n = Math.max(n, t() + o, Number.isFinite(s) ? s : 0);
+			let a = r === 429 ? 3600 * 1e3 : 360 * 60 * 1e3, o = /^\d+$/.test(i || "") ? t() + Number(i) * 1e3 : Date.parse(i || "");
+			n = Math.max(n, t() + a, Number.isFinite(o) ? o : 0);
 			try {
-				e?.setItem(i, String(n));
+				e?.setItem(u, String(n));
 			} catch {}
 			return n;
 		}
@@ -84,49 +135,35 @@ function a(e, t = () => Date.now()) {
 }
 //#endregion
 //#region client/history-files.mjs
-var o = "psd-history-day-v1", s = "psd-history-files-v1", c = "undated";
-function l(e) {
-	if (typeof e != "string" || !/^\d{4}-\d{2}-\d{2}$/.test(e)) return !1;
-	let t = /* @__PURE__ */ new Date(e + "T00:00:00Z");
-	return Number.isFinite(t.getTime()) && t.toISOString().slice(0, 10) === e;
-}
-function u(e) {
-	let t = /* @__PURE__ */ new Map(), n = /* @__PURE__ */ new Set();
-	for (let r of Array.isArray(e) ? e : []) {
-		if (!r || typeof r.name != "string" || !r.name.trim() || [...r.name].length > 256) continue;
-		let e = l(r.date) ? r.date : null, i = e || c, a = r.name.trim(), o = JSON.stringify([
-			i,
-			a,
-			e ? "" : r.id
-		]);
-		n.has(o) || (n.add(o), t.has(i) || t.set(i, []), t.get(i).push({
-			id: String(r.id ?? o),
-			name: a,
-			date: e
-		}));
+var f = "psd-history-day-v1", p = "psd-history-files-v1", m = "undated";
+function ee(e) {
+	let t = /* @__PURE__ */ new Map();
+	for (let n of i(e)) {
+		let e = n.date || m;
+		t.has(e) || t.set(e, []), t.get(e).push(n);
 	}
-	return [...t].sort(([e], [t]) => t.localeCompare(e)).map(([e, t]) => ({
+	return [...t].sort(([e], [t]) => e === m ? 1 : t === m ? -1 : t.localeCompare(e)).map(([e, t]) => ({
 		key: e,
 		filename: `PSD-history-${e}.json`,
 		text: JSON.stringify({
 			app: "P.S.D",
-			format: o,
-			date: e === c ? null : e,
+			format: f,
+			date: e === m ? null : e,
 			entries: t
 		}, null, 2)
 	}));
 }
-function d(e) {
+function h(e) {
 	return (Array.isArray(e) ? e : []).flatMap((e) => {
 		try {
 			let t = JSON.parse(e.text);
-			return t.app === "P.S.D" && t.format === o && Array.isArray(t.entries) ? t.entries : [];
+			return t.app === "P.S.D" && t.format === f && Array.isArray(t.entries) ? t.entries : [];
 		} catch {
 			return [];
 		}
 	});
 }
-function f(e, t) {
+function te(e, t) {
 	let n, r = Promise.resolve(), i = [], a = () => n ??= new Promise((e, n) => {
 		if (!t) {
 			n(/* @__PURE__ */ Error("IndexedDB unavailable"));
@@ -145,9 +182,9 @@ function f(e, t) {
 	});
 	function o() {
 		try {
-			let t = JSON.parse(e?.getItem(s) || "[]");
+			let t = JSON.parse(e?.getItem(p) || "[]");
 			return {
-				entries: d(Array.isArray(t) ? t : t.files),
+				entries: h(Array.isArray(t) ? t : t.files),
 				replace: t?.replace === !0
 			};
 		} catch {
@@ -157,79 +194,79 @@ function f(e, t) {
 			};
 		}
 	}
-	async function c(t, n) {
-		let r = [...t], c = o(), l = n;
-		n ||= c.replace;
-		let f = l ? [] : c.replace ? c.entries : [...i, ...c.entries], p;
+	async function s(t, n) {
+		let r = [...t], s = o(), c = n;
+		n ||= s.replace;
+		let l = c ? [] : s.replace ? s.entries : [...i, ...s.entries], u;
 		try {
 			let t = await a();
-			p = await new Promise((e, i) => {
+			u = await new Promise((e, i) => {
 				let a = t.transaction("files", "readwrite"), o = a.objectStore("files"), s, c = o.getAll();
 				c.onsuccess = () => {
-					s = u([
+					s = ee([
 						...r,
-						...f,
-						...n ? [] : d(c.result)
+						...l,
+						...n ? [] : h(c.result)
 					]), n && o.clear();
 					let e = new Map(c.result.map((e) => [e.key, e.text]));
 					for (let t of s) (n || e.get(t.key) !== t.text) && o.put(t);
 				}, a.oncomplete = () => e(s), a.onerror = a.onabort = () => i(a.error || /* @__PURE__ */ Error("History transaction failed"));
 			});
 			try {
-				e?.removeItem(s);
+				e?.removeItem(p);
 			} catch {}
 		} catch {
-			p = u([...r, ...f]);
+			u = ee([...r, ...l]);
 			try {
 				if (!e) throw Error();
-				e.setItem(s, JSON.stringify({
-					files: p,
+				e.setItem(p, JSON.stringify({
+					files: u,
 					replace: n
 				}));
 			} catch {
-				return i = d(p), {
-					files: p,
+				return i = h(u), {
+					files: u,
 					entries: i,
 					persisted: !1
 				};
 			}
 		}
-		return i = d(p), {
-			files: p,
+		return i = h(u), {
+			files: u,
 			entries: i,
 			persisted: !0
 		};
 	}
 	return { sync(e, { replace: t = !1 } = {}) {
-		let n = [...e], i = r.then(() => c(n, t));
+		let n = [...e], i = r.then(() => s(n, t));
 		return r = i.catch(() => {}), i;
 	} };
 }
 //#endregion
 //#region client/app.js
-var p = "3.5.0", m = 4, h = "psd-core-v4", g = 4, ee = 256, _ = Object.freeze([
+var g = "3.5.1", _ = 4, v = "psd-core-v4", y = 4, ne = 256, b = Object.freeze([
 	"dps-state",
 	"dps-core-v6",
 	"psd-core-v3",
 	"player-check-pro-v2",
 	"psd_history"
-]), v = (e) => e && typeof e == "object" && !Array.isArray(e), y = (e) => {
+]), x = (e) => e && typeof e == "object" && !Array.isArray(e), S = (e) => {
 	if (typeof e.isWellFormed == "function") return e.isWellFormed();
 	try {
 		return !0;
 	} catch {
 		return !1;
 	}
-}, b = new Set([
+}, C = new Set([
 	"dbd",
 	"apex",
 	"valorant",
 	"other",
 	""
-]), x = new Set(["smart", "force-google"]), te = () => globalThis.crypto?.randomUUID?.() ?? `dps-${Date.now()}-${Math.random().toString(36).slice(2)}`, S = (e) => typeof e == "string" && e.trim().length > 0 && [...e].length <= ee && y(e);
-function C() {
+]), w = new Set(["smart", "force-google"]), re = (e) => typeof e == "string" && e.trim().length > 0 && [...e].length <= ne && S(e);
+function T() {
 	return {
-		schemaVersion: m,
+		schemaVersion: _,
 		game: "dbd",
 		customGame: "",
 		mode: "smart",
@@ -239,40 +276,8 @@ function C() {
 		migratedLegacyKeys: []
 	};
 }
-function w(e = new Date(Date.now())) {
-	return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`;
-}
-function ne(e) {
-	if (typeof e != "string") return null;
-	let t = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(e);
-	if (!t) return null;
-	let [, n, r, i] = t.map(Number);
-	if (n < 1900 || n > 9999) return null;
-	let a = new Date(Date.UTC(n, r - 1, i));
-	return a.getUTCFullYear() === n && a.getUTCMonth() === r - 1 && a.getUTCDate() === i ? `${n}-${String(r).padStart(2, "0")}-${String(i).padStart(2, "0")}` : null;
-}
-function T(e) {
-	let t = /* @__PURE__ */ new Set(), n = /* @__PURE__ */ new Set();
-	return (Array.isArray(e) ? e : []).filter((e) => v(e) && S(e.name ?? e.playerName ?? e.query)).map((e, t) => ({
-		...e,
-		name: (e.name ?? e.playerName ?? e.query).trim(),
-		date: ne(e.date),
-		order: t
-	})).sort((e, t) => (t.date ?? "").localeCompare(e.date ?? "") || e.order - t.order).filter((e) => {
-		if (!e.date) return !0;
-		let n = JSON.stringify([e.name, e.date]);
-		return t.has(n) ? !1 : (t.add(n), !0);
-	}).map((e) => {
-		let t = typeof e.id == "string" || typeof e.id == "number" && Number.isFinite(e.id) ? String(e.id) : "";
-		return (!t || n.has(t)) && (t = te()), n.add(t), {
-			id: t,
-			name: e.name,
-			date: e.date
-		};
-	});
-}
 function E(e) {
-	let t = v(e?.settings) ? e.settings : {};
+	let t = x(e?.settings) ? e.settings : {};
 	return {
 		game: e?.game ?? e?.gameTitle ?? e?.gameSelect ?? t.game,
 		mode: e?.mode ?? e?.searchMode ?? e?.routing ?? t.routing,
@@ -282,43 +287,43 @@ function E(e) {
 	};
 }
 function D(e) {
-	let t = C();
-	if (!v(e)) return t;
+	let t = T();
+	if (!x(e)) return t;
 	let n = E(e);
-	return b.has(n.game) && (t.game = n.game), x.has(n.mode) && (t.mode = n.mode), typeof n.customGame == "string" && [...n.customGame].length <= 80 && y(n.customGame) && (t.customGame = n.customGame), Array.isArray(n.inputs) && (t.inputs = n.inputs.filter((e) => typeof e == "string" && [...e].length <= ee && y(e)).slice(0, g), t.inputs.length || (t.inputs = [""])), Array.isArray(n.resultNames) && (t.resultNames = n.resultNames.map((e) => typeof e == "string" ? e : v(e) ? e.playerName ?? e.name : null).filter(S).slice(0, g).map((e) => e.trim())), t.history = T(e.history), t.migratedLegacyKeys = Array.isArray(e.migratedLegacyKeys) ? [...new Set(e.migratedLegacyKeys.filter((e) => _.includes(e)))] : [], e.migratedLegacyHistory === !0 && !t.migratedLegacyKeys.includes("psd_history") && t.migratedLegacyKeys.push("psd_history"), t;
+	return C.has(n.game) && (t.game = n.game), w.has(n.mode) && (t.mode = n.mode), typeof n.customGame == "string" && [...n.customGame].length <= 80 && S(n.customGame) && (t.customGame = n.customGame), Array.isArray(n.inputs) && (t.inputs = n.inputs.filter((e) => typeof e == "string" && [...e].length <= ne && S(e)).slice(0, y), t.inputs.length || (t.inputs = [""])), Array.isArray(n.resultNames) && (t.resultNames = n.resultNames.map((e) => typeof e == "string" ? e : x(e) ? e.playerName ?? e.name : null).filter(re).slice(0, y).map((e) => e.trim())), t.history = i(e.history), t.migratedLegacyKeys = Array.isArray(e.migratedLegacyKeys) ? [...new Set(e.migratedLegacyKeys.filter((e) => b.includes(e)))] : [], e.migratedLegacyHistory === !0 && !t.migratedLegacyKeys.includes("psd_history") && t.migratedLegacyKeys.push("psd_history"), t;
 }
-function re(e) {
+function ie(e) {
 	let t = [], n = [], r;
 	try {
-		r = e.getItem(h);
+		r = e.getItem(v);
 	} catch {
 		return {
-			state: C(),
+			state: T(),
 			warnings: ["保存領域を読み込めません。入力は画面に保持します。"],
 			needsSave: !1
 		};
 	}
-	let i = C(), a = !1, o;
+	let a = T(), o = !1, s;
 	if (r != null) try {
 		let e = JSON.parse(r);
-		if (!v(e)) throw Error();
-		if (e.schemaVersion > m) return {
-			state: i,
+		if (!x(e)) throw Error();
+		if (e.schemaVersion > _) return {
+			state: a,
 			warnings: ["新しい形式の保存データがあります。上書き防止のため保存を停止しています。"],
 			blocked: !0,
 			needsSave: !1
 		};
-		i = D(e), a = !0, o = e;
+		a = D(e), o = !0, s = e;
 	} catch {
 		return {
-			state: i,
+			state: a,
 			warnings: ["保存JSONが壊れています。元データを残し、上書き保存を停止しました。バックアップの読込で復旧できます。"],
 			blocked: !0,
 			needsSave: !1
 		};
 	}
-	let s = new Set(i.migratedLegacyKeys);
-	for (let r of _) if (!s.has(r)) try {
+	let c = new Set(a.migratedLegacyKeys);
+	for (let r of b) if (!c.has(r)) try {
 		let t = e.getItem(r);
 		if (t != null) {
 			let e = JSON.parse(t);
@@ -326,68 +331,61 @@ function re(e) {
 				if (!Array.isArray(e)) throw Error();
 				n.push({ history: e });
 			} else {
-				if (!v(e)) throw Error();
+				if (!x(e)) throw Error();
 				n.push(e);
 			}
 		}
-		s.add(r);
+		c.add(r);
 	} catch {
 		t.push(`${r} は読み込めません。元データは残しています。`);
 	}
-	let c = null, l = null;
+	let l = null, u = null;
 	try {
-		c = e.getItem("psd_game");
+		l = e.getItem("psd_game");
 	} catch {}
 	try {
-		l = e.getItem("psd_routing");
+		u = e.getItem("psd_routing");
 	} catch {}
-	let u = l === "google" ? "force-google" : l;
-	if (!a) {
+	let d = u === "google" ? "force-google" : u;
+	if (!o) {
 		let e = n.map(E), r = (t, n) => e.map((e) => e[t]).find(n);
-		i = D({
-			game: r("game", (e) => b.has(e)) ?? (b.has(c) ? c : "dbd"),
-			mode: r("mode", (e) => x.has(e)) ?? (x.has(u) ? u : "smart"),
+		a = D({
+			game: r("game", (e) => C.has(e)) ?? (C.has(l) ? l : "dbd"),
+			mode: r("mode", (e) => w.has(e)) ?? (w.has(d) ? d : "smart"),
 			customGame: r("customGame", (e) => typeof e == "string"),
 			inputs: r("inputs", Array.isArray),
 			resultNames: r("resultNames", Array.isArray)
-		}), l && !x.has(u) && t.push("旧ダイレクトモード等は互換性がないため、スマート検索に戻しました。");
+		}), u && !w.has(d) && t.push("旧ダイレクトモード等は互換性がないため、スマート検索に戻しました。");
 	}
-	if (a) {
-		let e = E(o), t = n.map(E), r = (e, n) => t.map((t) => t[e]).find(n), a = {};
-		e.game === void 0 && (a.game = r("game", (e) => b.has(e))), e.mode === void 0 && (a.mode = r("mode", (e) => x.has(e))), e.customGame === void 0 && (a.customGame = r("customGame", (e) => typeof e == "string")), e.inputs === void 0 && (a.inputs = r("inputs", Array.isArray)), e.resultNames === void 0 && (a.resultNames = r("resultNames", Array.isArray));
-		for (let e of Object.keys(a)) a[e] === void 0 && delete a[e];
-		i = D({
-			...i,
-			...a
+	if (o) {
+		let e = E(s), t = n.map(E), r = (e, n) => t.map((t) => t[e]).find(n), i = {};
+		e.game === void 0 && (i.game = r("game", (e) => C.has(e))), e.mode === void 0 && (i.mode = r("mode", (e) => w.has(e))), e.customGame === void 0 && (i.customGame = r("customGame", (e) => typeof e == "string")), e.inputs === void 0 && (i.inputs = r("inputs", Array.isArray)), e.resultNames === void 0 && (i.resultNames = r("resultNames", Array.isArray));
+		for (let e of Object.keys(i)) i[e] === void 0 && delete i[e];
+		a = D({
+			...a,
+			...i
 		});
 	}
-	return i.history = T([...i.history, ...n.flatMap((e) => Array.isArray(e.history) ? e.history : [])]), i.migratedLegacyKeys = [...s], (n.length || !a && (c !== null || l !== null)) && t.push("旧データを読み込みました。元の保存キーは削除していません。"), {
-		state: i,
+	return a.history = i([...a.history, ...n.flatMap((e) => Array.isArray(e.history) ? e.history : [])]), a.migratedLegacyKeys = [...c], (n.length || !o && (l !== null || u !== null)) && t.push("旧データを読み込みました。元の保存キーは削除していません。"), {
+		state: a,
 		warnings: t,
 		blocked: !1,
-		needsSave: a || n.length > 0 || c !== null || l !== null
+		needsSave: o || n.length > 0 || l !== null || u !== null
 	};
 }
-function ie(e, t) {
+function ae(e, t) {
 	try {
-		return e.setItem(h, JSON.stringify(D(t))), !0;
+		return e.setItem(v, JSON.stringify(D(t))), !0;
 	} catch {
 		return !1;
 	}
 }
-function ae(e, t, n = w()) {
-	e.history = T([...t.map((e) => ({
-		id: te(),
-		name: e.trim(),
-		date: n
-	})), ...e.history]);
-}
 function oe(e) {
-	let t = JSON.parse(e), n = v(t?.state) ? t.state : t;
-	if (!v(n) || !Array.isArray(E(n).inputs) || !Array.isArray(n.history)) throw Error("P.S.Dのバックアップ形式ではありません。");
-	if (n.schemaVersion > m) throw Error("新しい形式のため、この版では読めません。");
+	let t = JSON.parse(e), n = x(t?.state) ? t.state : t;
+	if (!x(n) || !Array.isArray(E(n).inputs) || !Array.isArray(n.history)) throw Error("P.S.Dのバックアップ形式ではありません。");
+	if (n.schemaVersion > _) throw Error("新しい形式のため、この版では読めません。");
 	let r = D(n);
-	return r.migratedLegacyKeys = [..._], r;
+	return r.migratedLegacyKeys = [...b], r;
 }
 var O = (e) => document.getElementById(e);
 function k(e, t, n) {
@@ -403,7 +401,7 @@ function se(e, t) {
 	return n.href = t, n.target = "_blank", n.rel = "noopener noreferrer", n.referrerPolicy = "no-referrer", n.addEventListener("click", (e) => {
 		let n = new URL(t).hostname, r = fe.get(n) ?? -Infinity;
 		if (Date.now() - r < 2e3) {
-			e.preventDefault(), K("連続して開く操作を止めました。少し間をあけてください。");
+			e.preventDefault(), q("連続して開く操作を止めました。少し間をあけてください。");
 			return;
 		}
 		fe.set(n, Date.now());
@@ -413,23 +411,23 @@ var j;
 try {
 	j = window.localStorage;
 } catch {}
-var M = re(j), ce = document.querySelector("meta[name=\"psd-api-base\"]")?.content, N = M.state, P = M.blocked ?? !1, le = new URL(ce || "./api/", document.baseURI).href, F, I = 0, L = !1, ue = new Set(M.warnings), de = /* @__PURE__ */ new Map(), R = /* @__PURE__ */ new Set(), z = "psd-shared-routes-v2", B = /* @__PURE__ */ new Map(), V = /* @__PURE__ */ new Map(), fe = /* @__PURE__ */ new Map(), H = a(j), pe = f(j, globalThis.indexedDB), U = 0, me, W = [], G = !1;
+var M = ie(j), ce = document.querySelector("meta[name=\"psd-api-base\"]")?.content, N = M.state, P = M.blocked ?? !1, le = new URL(ce || "./api/", document.baseURI).href, F, I = 0, L = !1, ue = new Set(M.warnings), de = /* @__PURE__ */ new Map(), R = /* @__PURE__ */ new Set(), z = "psd-shared-routes-v2", B = /* @__PURE__ */ new Map(), V = /* @__PURE__ */ new Map(), fe = /* @__PURE__ */ new Map(), H = d(j), pe = te(j, globalThis.indexedDB), U = 0, me, W = [], he = P, ge, G = !1, K = !1;
 try {
 	let e = JSON.parse(j?.getItem(z) || "null");
-	if (e?.version === p && Array.isArray(e.entries)) for (let t of e.entries.slice(-100)) {
+	if (e?.version === g && Array.isArray(e.entries)) for (let t of e.entries.slice(-100)) {
 		if (!Number.isFinite(t?.savedAt)) continue;
-		let e = r([t])[0];
+		let e = l([t])[0];
 		e?.routes.length === 6 && (B.set(e.name, e.routes), V.set(e.name, t.savedAt));
 	}
 } catch {}
-function he() {
+function _e() {
 	for (; B.size > 100;) {
 		let e = B.keys().next().value;
 		B.delete(e), V.delete(e);
 	}
 	try {
 		j?.setItem(z, JSON.stringify({
-			version: p,
+			version: g,
 			entries: [...B].map(([e, t]) => ({
 				name: e,
 				routes: t,
@@ -438,35 +436,35 @@ function he() {
 		}));
 	} catch {}
 }
-function K(e) {
+function q(e) {
 	ue.add(e), O("notice").textContent = [...ue].join("\n"), O("notice").hidden = !1;
 }
-for (let e of M.warnings) K(e);
-function q() {
-	if (P) return !1;
-	let e = ie(j, N);
-	return e || K("端末への保存に失敗しました。入力は画面に残ります。バックアップを書き出してください。"), e;
-}
-M.needsSave && q();
+for (let e of M.warnings) q(e);
 function J() {
-	return T([...N.history, ...W]);
+	if (P) return !1;
+	let e = ae(j, N);
+	return e || q("端末への保存に失敗しました。入力は画面に残ります。バックアップを書き出してください。"), e;
 }
-function Y({ replace: e = !1 } = {}) {
+M.needsSave && J();
+function Y() {
+	return i([...N.history, ...W]);
+}
+function X({ replace: e = !1 } = {}) {
 	let t = U;
-	return pe.sync(J(), { replace: e }).then((e) => {
+	return pe.sync(Y(), { replace: e }).then((e) => {
 		if (t !== U) return;
-		let n = T([...N.history, ...e.entries]);
+		let r = i([...N.history, ...e.entries]);
 		if (e.persisted) {
-			let e = w();
-			W = n.filter((t) => t.date !== e), N.history = n.filter((t) => t.date === e);
-		} else N.history = n;
-		P || q(), e.persisted || K("日別ファイルを端末に保存できません。履歴の保存ボタンで書き出してください。"), $();
-	}).catch(() => K("日別ファイルを保存できません。履歴の保存ボタンで書き出してください。"));
+			let e = n();
+			W = r.filter((t) => t.date !== e), N.history = r.filter((t) => t.date === e);
+		} else N.history = r;
+		P || J(), e.persisted || q("履歴を端末内に保存できません。バックアップを書き出してください。"), $();
+	}).catch(() => q("履歴を保存できません。バックアップを書き出してください。"));
 }
-P || (O("export").disabled = !0, Y().finally(() => {
-	O("export").disabled = !1;
+P || (O("export").disabled = !0, O("search").disabled = !0, ge = X().finally(() => {
+	he = !0, O("export").disabled = !1, O("search").disabled = !1;
 }));
-function X() {
+function ve() {
 	I++;
 	for (let e of R) e.path === "routes" && e.controller.abort();
 	de.clear();
@@ -477,14 +475,14 @@ function Z(e) {
 		r.htmlFor = `name-${t}`;
 		let i = k("input");
 		return i.id = `name-${t}`, i.type = "text", i.value = e, i.placeholder = "プレイヤー名を入力", i.maxLength = 256, i.autocomplete = "off", i.spellcheck = !1, i.addEventListener("input", () => {
-			N.inputs[t] = i.value, q();
+			N.inputs[t] = i.value, J();
 		}), i.addEventListener("keydown", (e) => {
-			e.key === "Enter" && !e.isComposing && e.keyCode !== 229 && (e.preventDefault(), ye());
+			e.key === "Enter" && !e.isComposing && e.keyCode !== 229 && (e.preventDefault(), Se());
 		}), n.append(r, i), N.inputs.length > 1 && n.append(A("×", "remove", () => {
-			N.inputs.splice(t, 1), q(), Z(Math.min(t, N.inputs.length - 1));
+			N.inputs.splice(t, 1), J(), Z(Math.min(t, N.inputs.length - 1));
 		}, `プレイヤー${t + 1}の入力欄を削除`)), n;
 	});
-	O("names-container").replaceChildren(...t), O("slot-count").textContent = `${N.inputs.length} / ${g}`, O("add-player").disabled = N.inputs.length >= g, e !== void 0 && O(`name-${e}`)?.focus();
+	O("names-container").replaceChildren(...t), O("slot-count").textContent = `${N.inputs.length} / ${y}`, O("add-player").disabled = N.inputs.length >= y, e !== void 0 && O(`name-${e}`)?.focus();
 }
 function Q(e = !1) {
 	let t = N.resultNames.map((t) => {
@@ -493,17 +491,17 @@ function Q(e = !1) {
 		let r = k("nav", "media-grid");
 		r.setAttribute("aria-label", `${t}の媒体別検索先`);
 		for (let n of e ? [] : B.get(t) ?? []) {
-			let e = se(n.name, G ? n.broad : n.url);
-			e.className = `media-link media-${n.id}`, e.setAttribute("aria-label", `${t}を${n.name}で${!G && n.scope === "dbd" ? "DBD関連検索" : n.scope === "profile" ? "ID・URLを開く・DBD関連未確認" : "検索"}（新しいタブ）`), r.append(e);
+			let e = se(n.name, K ? n.broad : n.url);
+			e.className = `media-link media-${n.id}`, e.setAttribute("aria-label", `${t}を${n.name}で${!K && n.scope === "dbd" ? "DBD関連検索" : n.scope === "profile" ? "ID・URLを開く・DBD関連未確認" : "検索"}（新しいタブ）`), r.append(e);
 		}
 		return n.append(r), r.childElementCount || n.append(k("p", "hint", e ? "検索先を準備中…" : "検索ボタンで検索先を準備できます。")), n;
 	});
-	O("results").replaceChildren(...t), O("expand-search").hidden = e || !N.resultNames.some((e) => B.get(e)?.some((e) => e.broad !== e.url)), O("expand-search").textContent = G ? "DBD関連に戻す" : "検索を広げる", O("expand-search").setAttribute("aria-pressed", String(G));
+	O("results").replaceChildren(...t), O("expand-search").hidden = e || !N.resultNames.some((e) => B.get(e)?.some((e) => e.broad !== e.url)), O("expand-search").textContent = K ? "DBD関連に戻す" : "検索を広げる", O("expand-search").setAttribute("aria-pressed", String(K));
 }
-function ge() {
+function ye() {
 	return matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 }
-async function _e(e, t) {
+async function be(e, t) {
 	if (!le) throw Error("APIサーバー未接続です。配布版READMEの設定手順を確認してください。");
 	let n = new AbortController(), r = {
 		path: e,
@@ -528,7 +526,7 @@ async function _e(e, t) {
 		} catch {
 			throw Error("APIからJSON形式の応答を取得できませんでした。");
 		}
-		if (!v(a)) throw Error("APIの応答形式が不正です。");
+		if (!x(a)) throw Error("APIの応答形式が不正です。");
 		if (!r.ok) throw Error(typeof a.error == "string" ? a.error : "APIサーバーで取得に失敗しました。");
 		return a;
 	} catch (e) {
@@ -537,7 +535,7 @@ async function _e(e, t) {
 		clearTimeout(i), R.delete(r);
 	}
 }
-async function ve(e, t = {}, n = 8e3) {
+async function xe(e, t = {}, n = 8e3) {
 	let r = new AbortController(), i = setTimeout(() => r.abort(), n);
 	try {
 		return await fetch(e, {
@@ -548,82 +546,95 @@ async function ve(e, t = {}, n = 8e3) {
 		clearTimeout(i);
 	}
 }
-async function ye() {
+async function Se() {
+	if (!he) {
+		if (G) return;
+		G = !0;
+		try {
+			await ge;
+		} finally {
+			G = !1;
+		}
+	}
 	let e = N.inputs.map((e) => e.trim()).filter(Boolean);
 	if (!e.length) {
-		K("プレイヤー名を入力してください。"), O("name-0").focus();
+		q("プレイヤー名を入力してください。"), O("name-0").focus();
 		return;
 	}
-	if (e.some((e) => !S(e))) {
-		K("プレイヤー名は256文字以内で入力してください。");
+	if (e.some((e) => !re(e))) {
+		q("プレイヤー名は256文字以内で入力してください。");
 		return;
 	}
 	if ([...R].some((e) => e.path === "routes")) return;
-	X();
+	ve();
 	let t = I;
-	G = !1, N.resultNames = e, ae(N, e), q(), P || Y();
-	let n = [...new Set(e)].filter((e) => {
+	K = !1, N.resultNames = e;
+	let r = [...new Set(e)].filter((e) => {
 		let t = Date.now() - (V.get(e) ?? -Infinity);
 		return !B.has(e) || t < 0 || t >= 6e5;
-	});
-	if (!n.length) {
-		Q();
+	}), i = () => {
+		a(N, e, n(), Y()), J(), P || X();
+	};
+	if (!r.length) {
+		i(), Q();
 		return;
 	}
-	let i = H.begin();
-	if (!i.ok) {
-		K(i.reason === "blocked" ? `${new Date(i.until).toLocaleString("ja-JP")}まで新規検索の通信を停止しています。` : "続けての検索を止めました。少し間をあけてください。"), Q();
+	let o = H.begin();
+	if (!o.ok) {
+		q(o.reason === "blocked" ? `${new Date(o.until).toLocaleString("ja-JP")}まで新規検索の通信を停止しています。` : "続けての検索を止めました。少し間をあけてください。"), J(), Q();
 		return;
 	}
-	O("search").disabled = !0, Q(!0), O("results").scrollIntoView({
-		behavior: ge(),
+	i(), O("search").disabled = !0, Q(!0), O("results").scrollIntoView({
+		behavior: ye(),
 		block: "start"
 	});
 	try {
-		let e = await _e("routes", { names: n });
-		if (e.version !== p) throw Error("検索サーバーの更新中です。時間をおいてお試しください。");
-		let i = r(e.results);
-		if (i.length !== n.length || i.some((e, t) => e.name !== n[t] || e.routes.length !== 6)) throw Error("検索先の応答形式を確認できませんでした。");
+		let e = await be("routes", { names: r });
+		if (e.version !== g) throw Error("検索サーバーの更新中です。時間をおいてお試しください。");
+		let n = l(e.results);
+		if (n.length !== r.length || n.some((e, t) => e.name !== r[t] || e.routes.length !== 6)) throw Error("検索先の応答形式を確認できませんでした。");
 		if (t !== I) return;
-		for (let e of i) B.delete(e.name), B.set(e.name, e.routes), V.set(e.name, Date.now());
-		v(e.settings) && (N.game = e.settings.game, N.mode = e.settings.mode, N.customGame = e.settings.customGame, q()), he();
+		for (let e of n) B.delete(e.name), B.set(e.name, e.routes), V.set(e.name, Date.now());
+		x(e.settings) && (N.game = e.settings.game, N.mode = e.settings.mode, N.customGame = e.settings.customGame, J()), _e();
 	} catch (e) {
-		t === I && K(e.message || "新しい検索には通信が必要です。入力と履歴は端末に残っています。");
+		t === I && q(e.message || "新しい検索には通信が必要です。入力と履歴は端末に残っています。");
 	} finally {
 		H.finish(), O("search").disabled = !1, t === I && Q();
 	}
 }
 function $() {
-	let e = O("history-filter").value.toLocaleLowerCase("ja-JP"), t = w(), n = J(), r = n.filter((n) => n.date === t && n.name.toLocaleLowerCase("ja-JP").includes(e)).map((e) => {
-		let t = k("div", "history-item"), n = A("", "secondary history-pick", () => {
-			X(), N.inputs = [e.name], N.resultNames = [], q(), Z(), Q(), O("history-dialog").close(), O("name-0").focus();
+	let e = O("history-filter").value.toLocaleLowerCase("ja-JP"), t = ee(Y()).filter((t) => JSON.parse(t.text).entries.some((t) => t.name.toLocaleLowerCase("ja-JP").includes(e)));
+	O("history-days").replaceChildren(...t.length ? t.map((e) => {
+		let t = A("", "secondary history-day", () => Te(e.key));
+		return t.append(k("strong", "", Ce(e.key)), k("small", "", `${JSON.parse(e.text).entries.length}名`)), t;
+	}) : [k("p", "hint", e ? "一致する履歴はありません。" : "履歴はありません。")]), O("history-day-dialog").open && we();
+}
+function Ce(e) {
+	if (e === "undated") return "日付不明";
+	let [t, n, r] = e.split("-").map(Number);
+	return `${t}年${n}月${r}日`;
+}
+function we() {
+	let e = me;
+	O("history-day-title").textContent = `${Ce(e)}の検索履歴`;
+	let r = Y().filter((t) => (t.date || "undated") === e).map((e) => {
+		let r = k("div", "history-item"), i = A("", "secondary history-pick", () => {
+			ve(), N.inputs = [e.name], N.resultNames = [], J(), Z(), Q(), O("history-day-dialog").close(), O("history-dialog").close(), O("name-0").focus();
 		});
-		return n.append(k("span", "", e.name), k("small", "", e.date ?? "日付不明")), t.append(n, A("×", "remove", () => {
-			N.history = N.history.filter((t) => t.id !== e.id), W = W.filter((t) => t.id !== e.id), U++, q(), Y({ replace: !0 }), $();
-		}, `${e.name}の履歴を1件削除`)), t;
+		return i.append(k("span", "", e.name)), t(e.count) >= 2 && i.append(k("small", "repeat-search", `${e.count}回目の検索`)), r.append(i), e.date === n() && r.append(A("×", "remove", () => {
+			N.history = N.history.filter((t) => t.id !== e.id), W = W.filter((t) => t.id !== e.id), U++, J(), X({ replace: !0 }), $();
+		}, `${e.name}の履歴を1件削除`)), r;
 	});
-	O("history-list").replaceChildren(...r.length ? r : [k("p", "hint", e ? "一致する当日の履歴はありません。" : "当日の履歴はありません。")]);
-	let i = u(n).filter((n) => n.key !== t && JSON.parse(n.text).entries.some((t) => t.name.toLocaleLowerCase("ja-JP").includes(e)));
-	O("history-files").replaceChildren(...i.length ? i.map((e) => {
-		let t = A("", "secondary history-file", () => xe(e));
-		return t.append(k("strong", "", e.filename), k("small", "", `${JSON.parse(e.text).entries.length}件・開く`)), t;
-	}) : [k("p", "hint", e ? "一致する日別ファイルはありません。" : "日別ファイルはありません。")]), O("save-today-history").disabled = !n.some((e) => e.date === t);
+	O("history-day-list").replaceChildren(...r.length ? r : [k("p", "hint", "この日の履歴はありません。")]);
 }
-function be(e) {
-	if (!e) return;
-	let t = new Blob([e.text], { type: "application/json;charset=utf-8" }), n = URL.createObjectURL(t), r = k("a");
-	r.href = n, r.download = e.filename, document.body.append(r), r.click(), r.remove(), setTimeout(() => URL.revokeObjectURL(n), 3e4), O("history-file-status").textContent = "ファイルの書き出しを開始しました。保存先を確認してください。";
+function Te(e) {
+	me = e, we(), O("history-day-dialog").showModal();
 }
-function xe(e) {
-	me = e;
-	let t = JSON.parse(e.text);
-	O("history-file-title").textContent = e.filename, O("history-file-content").textContent = `${t.date ?? "日付不明"}　${t.entries.length}件\n\n${t.entries.map((e) => e.name).join("\n")}`, O("history-file-status").textContent = "", O("history-file-dialog").showModal();
-}
-function Se() {
-	O("app-version").textContent = `v${p}`, O("add-player").addEventListener("click", () => {
-		N.inputs.length >= g || (N.inputs.push(""), q(), Z(N.inputs.length - 1));
-	}), O("search").addEventListener("click", ye), O("expand-search").addEventListener("click", () => {
-		G = !G, Q();
+function Ee() {
+	O("app-version").textContent = `v${g}`, O("add-player").addEventListener("click", () => {
+		N.inputs.length >= y || (N.inputs.push(""), J(), Z(N.inputs.length - 1));
+	}), O("search").addEventListener("click", Se), O("expand-search").addEventListener("click", () => {
+		K = !K, Q();
 	});
 	for (let e of ["data", "history"]) O(`open-${e}`).addEventListener("click", () => {
 		e === "history" ? $() : O("history-dialog").close(), O(`${e}-dialog`).showModal();
@@ -636,10 +647,7 @@ function Se() {
 		}
 		e.shiftKey && document.activeElement === n ? (e.preventDefault(), r.focus()) : !e.shiftKey && document.activeElement === r && (e.preventDefault(), n.focus());
 	});
-	if (O("close-history-file").addEventListener("click", () => O("history-file-dialog").close()), O("save-history-file").addEventListener("click", () => be(me)), O("save-today-history").addEventListener("click", () => {
-		let e = u(J()).find((e) => e.key === w());
-		e && (xe(e), be(e));
-	}), addEventListener("focus", $), document.addEventListener?.("visibilitychange", $), typeof document.visibilityState == "string") {
+	if (O("close-history-day").addEventListener("click", () => O("history-day-dialog").close()), addEventListener("focus", $), document.addEventListener?.("visibilitychange", $), typeof document.visibilityState == "string") {
 		let e, t = () => {
 			clearTimeout(e);
 			let n = new Date(Date.now()), r = new Date(n);
@@ -650,12 +658,12 @@ function Se() {
 		t();
 	}
 	O("history-filter").addEventListener("input", $), O("clear-history").addEventListener("click", () => {
-		confirm("当日の履歴と日別ファイルをすべて削除しますか？") && (N.history = [], W = [], U++, q(), Y({ replace: !0 }), $());
+		confirm("すべての日付の検索履歴を削除しますか？") && (N.history = [], W = [], U++, J(), X({ replace: !0 }), $());
 	}), O("export").addEventListener("click", () => {
 		let e = {};
 		if (P && j) for (let t of [
-			h,
-			..._,
+			v,
+			...b,
 			"psd_game",
 			"psd_routing"
 		]) try {
@@ -667,24 +675,24 @@ function Se() {
 			exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
 			state: {
 				...N,
-				history: J()
+				history: Y()
 			},
 			...P ? { originalStorage: e } : {}
-		}, null, 2)], { type: "application/json" }), n = URL.createObjectURL(t), r = k("a");
-		r.href = n, r.download = `PSD-backup-${w()}.json`, document.body.append(r), r.click(), r.remove(), setTimeout(() => URL.revokeObjectURL(n), 3e4), O("storage-status").textContent = "JSONの書き出しを開始しました。ファイルを保管してください。";
+		}, null, 2)], { type: "application/json" }), r = URL.createObjectURL(t), i = k("a");
+		i.href = r, i.download = `PSD-backup-${n()}.json`, document.body.append(i), i.click(), i.remove(), setTimeout(() => URL.revokeObjectURL(r), 3e4), O("storage-status").textContent = "JSONの書き出しを開始しました。ファイルを保管してください。";
 	}), O("import").addEventListener("click", () => O("import-file").click()), O("import-file").addEventListener("change", async (e) => {
 		let t = e.target.files?.[0];
 		if (t) try {
 			if (t.size > 2e6) throw Error("2MB以内のJSONを選んでください。");
 			let e = oe(await t.text());
 			if (!confirm("バックアップの入力・設定・履歴で、このアプリの保存データを置き換えますか？")) return;
-			X(), B.clear(), V.clear();
+			ve(), B.clear(), V.clear();
 			try {
 				j?.removeItem(z);
 			} catch {}
 			N = e, P = !1, W = [], U++;
-			let n = q();
-			Y({ replace: !0 }), Z(), Q(), $(), O("storage-status").textContent = n ? "バックアップを読み込み、保存しました。" : "画面には読み込みましたが、端末への保存には失敗しました。";
+			let n = J();
+			X({ replace: !0 }), Z(), Q(), $(), O("storage-status").textContent = n ? "バックアップを読み込み、保存しました。" : "画面には読み込みましたが、端末への保存には失敗しました。";
 		} catch (e) {
 			O("storage-status").textContent = `読込できません：${e.message}`;
 		} finally {
@@ -701,7 +709,7 @@ function Se() {
 		} catch {
 			O("storage-status").textContent = "保存領域の保護を確認できませんでした。";
 		}
-	}), O("update").addEventListener("click", we);
+	}), O("update").addEventListener("click", Oe);
 	let e = /iPad|iPhone|iPod/.test(navigator.userAgent) || /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
 	O("install-banner").hidden = !e || navigator.standalone === !0 || matchMedia("(display-mode: standalone)").matches;
 	let t = () => {
@@ -709,9 +717,9 @@ function Se() {
 	};
 	addEventListener("online", t), addEventListener("offline", t), t();
 }
-async function Ce() {
+async function De() {
 	if (!("serviceWorker" in navigator) || !window.isSecureContext) {
-		K("この環境ではオフライン起動を準備できません。HTTPSまたはlocalhostを使用してください。");
+		q("この環境ではオフライン起動を準備できません。HTTPSまたはlocalhostを使用してください。");
 		return;
 	}
 	try {
@@ -721,7 +729,7 @@ async function Ce() {
 		});
 		let e = !1;
 		navigator.serviceWorker.addEventListener("controllerchange", () => {
-			!navigator.serviceWorker.controller || e || L && (e = !0, q(), location.reload());
+			!navigator.serviceWorker.controller || e || L && (e = !0, J(), location.reload());
 		}), F.addEventListener("updatefound", () => {
 			let e = F.installing;
 			e?.addEventListener("statechange", () => {
@@ -729,19 +737,19 @@ async function Ce() {
 			});
 		});
 	} catch {
-		K("オフライン用データを準備できませんでした。オンラインの機能は使用できます。");
+		q("オフライン用データを準備できませんでした。オンラインの機能は使用できます。");
 	}
 }
-async function we() {
+async function Oe() {
 	O("update").disabled = !0, O("update-status").textContent = "更新を確認中…";
 	try {
 		if (!navigator.onLine) throw Error("オフラインのため更新を確認できません。");
-		let e = await ve("./version.json", { cache: "no-store" });
+		let e = await xe("./version.json", { cache: "no-store" });
 		if (!e.ok) throw Error("バージョン情報を取得できませんでした。");
 		let t = await e.json();
 		if (!/^\d+\.\d+\.\d+$/.test(t.version)) throw Error("バージョン情報の形式が不正です。");
 		if (!F) {
-			t.version === p ? O("update-status").textContent = `最新版です（v${p}）。` : O("update-status").textContent = `v${t.version}があります。ページを再読み込みしてください。`;
+			t.version === g ? O("update-status").textContent = `最新版です（v${g}）。` : O("update-status").textContent = `v${t.version}があります。ページを再読み込みしてください。`;
 			return;
 		}
 		if (await F.update(), F.installing && await new Promise((e) => {
@@ -750,16 +758,16 @@ async function we() {
 				["installed", "redundant"].includes(t.state) && (clearTimeout(n), e());
 			});
 		}), F.waiting) {
-			if (!q()) throw Error("入力を保存できないため、更新の適用を止めました。先にバックアップを書き出してください。");
+			if (!J()) throw Error("入力を保存できないため、更新の適用を止めました。先にバックアップを書き出してください。");
 			L = !0, F.waiting.postMessage({ type: "DPS_SKIP_WAITING" }), O("update-status").textContent = "このアプリの更新を適用中…", setTimeout(() => {
 				L && (O("update-status").textContent = "更新の切替を確認できませんでした。入力を保存してから、もう一度お試しください。");
 			}, 15e3);
-		} else O("update-status").textContent = t.version === p ? `最新版です（v${p}）。` : `v${t.version}があります。配信が完了してから再度確認してください。`;
+		} else O("update-status").textContent = t.version === g ? `最新版です（v${g}）。` : `v${t.version}があります。配信が完了してから再度確認してください。`;
 	} catch (e) {
 		O("update-status").textContent = e instanceof TypeError ? "通信できないため、更新を確認できませんでした。" : e.message || "更新を確認できませんでした。";
 	} finally {
 		O("update").disabled = !1;
 	}
 }
-Se(), Z(), Q(), Ce();
+Ee(), Z(), Q(), De();
 //#endregion

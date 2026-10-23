@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; connect-src 'self' https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="psd-api-base" content="https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site/api/">
-  <meta name="psd-version" content="3.5.0">
+  <meta name="psd-version" content="3.5.1">
   <meta name="theme-color" content="#0c0d0f">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,8 +16,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/knight-detective-eye-192-v1.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/knight-detective-eye-180-v1.png">
-  <link rel="stylesheet" href="./styles.css?v=3.5.0">
-  <script type="module" src="./app.js?v=3.5.0"></script>
+  <link rel="stylesheet" href="./styles.css?v=3.5.1">
+  <script type="module" src="./app.js?v=3.5.1"></script>
 </head>
 <body>
   <main>
@@ -55,21 +55,14 @@
   <dialog id="history-dialog" aria-labelledby="history-title">
     <div class="dialog-heading"><h2 id="history-title">履歴</h2><button id="close-history" class="button secondary" autofocus>完了</button></div>
     <label for="history-filter">名前で絞り込む</label><input id="history-filter" type="search" autocomplete="off" placeholder="名前で検索">
-    <p class="hint">当日の名前だけを一覧表示します。前日以前は日別ファイルから確認できます。</p>
-    <h3>当日の履歴</h3>
-    <div id="history-list" class="history-list"></div>
-    <button id="save-today-history" class="button secondary full">当日分をファイルに保存</button>
-    <h3>日別ファイル</h3>
-    <p class="hint">このアプリ内に自動保存します。「ファイルに保存」で端末にも書き出せます。</p>
-    <div id="history-files" class="history-files"></div>
+    <p class="hint">日付を選ぶと、その日の検索履歴を表示します。履歴は自動保存します。</p>
+    <div id="history-days" class="history-days"></div>
     <button id="open-data" class="button secondary full">バックアップ・更新</button>
     <button id="clear-history" class="button danger full">全履歴を削除</button>
   </dialog>
-  <dialog id="history-file-dialog" aria-labelledby="history-file-title">
-    <div class="dialog-heading"><h2 id="history-file-title">日別ファイル</h2><button id="close-history-file" class="button secondary" autofocus>閉じる</button></div>
-    <pre id="history-file-content" class="history-file-content"></pre>
-    <button id="save-history-file" class="button secondary full">ファイルに保存</button>
-    <p id="history-file-status" class="hint" role="status"></p>
+  <dialog id="history-day-dialog" aria-labelledby="history-day-title">
+    <div class="dialog-heading"><h2 id="history-day-title">検索履歴</h2><button id="close-history-day" class="button secondary" autofocus>閉じる</button></div>
+    <div id="history-day-list" class="history-list"></div>
   </dialog>
 </body>
 </html>
