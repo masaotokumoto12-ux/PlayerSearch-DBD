@@ -17,3 +17,11 @@ footer{font-size:11px;color:#c2b4b4;text-align:center;padding:26px 4px 8px}foote
 @media print{body{background:white;color:black}body::before,.header-actions,.primary,dialog{display:none}.panel,.knight-result,.media-link{background:white;color:black;border:1px solid black;box-shadow:none}main{max-width:none}.brand h1,.subtitle,.hint,footer{color:black;text-shadow:none}}
 /* Keep controls clear of the Knight's face. */
 .header-actions{top:auto;bottom:16px;right:0}
+
+
+.history-files { display: grid; gap: .65rem; margin-bottom: 1rem; }
+.history-file { display: flex; align-items: center; justify-content: space-between; gap: .65rem; text-align: left; }
+.history-file strong, #history-file-title { overflow-wrap: anywhere; font-size: .9rem; }
+.history-file small { flex-shrink: 0; color: #c9b9a7; }
+.history-file-content { white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; line-height: 1.8; max-height: 55vh; overflow-y: auto; }
+#history-dialog h3 { margin-top: 1.4rem; }

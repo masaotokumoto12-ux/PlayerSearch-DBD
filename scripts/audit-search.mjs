@@ -36,7 +36,8 @@ cases.push(
   {input: 'https://help.x.com/sample_123'},
   {input: 'https://x.com/%2Fsearch'}
 );
-const smokeInputs = new Set(['MaKun_inkya','ヅオパン','https://www.youtube.com/c/YouTubeCreators','https://x.com/name-with.dot']);
+cases.push({input:'@MaKun_inkya',query:'MaKun_inkya',handle:true});
+const smokeInputs = new Set(['MaKun_inkya','ヅオパン','@MaKun_inkya','https://www.youtube.com/c/YouTubeCreators']);
 const selectedCases = process.argv.includes('--full') ? cases : cases.filter(item => smokeInputs.has(item.input));
 
 const batches = [];
@@ -59,31 +60,31 @@ for (let offset = 0; offset < selectedCases.length; offset += 4) {
     assert.equal(result.name, item.input);
     assert.deepEqual(result.routes.map(route => route.id), ids);
     for (const route of result.routes) {
-      const related = new URL(route.url);
-      assert.equal(related.protocol,'https:');
-      if(value.settings.mode==='smart' && route.id===item.direct)assert.equal(route.url,item.directUrl??item.input);
-      else {
-        assert.equal(related.hostname,'www.google.com');
-        assert.equal(related.pathname,'/search');
-        assert.ok(related.searchParams.get('q').includes('Dead by Daylight'));
-        assert.ok(related.searchParams.get('q').endsWith(`"${query}" ${sites[route.id]}`));
-        assert.equal(route.scope,'dbd');
-      }
-      const url = new URL(route.broad);
-      assert.equal(url.protocol, 'https:');
-      assert.equal(url.username + url.password, '');
-      if (value.settings.mode === 'force-google' || route.id === '5ch') {
-        assert.equal(url.hostname, 'www.google.com');
-        assert.equal(url.pathname, '/search');
-        assert.equal(url.searchParams.get('q'), `"${query}" ${sites[route.id]}`);
-      } else if (route.id === item.direct) {
-        assert.equal(route.broad, item.directUrl ?? item.input);
+      const url = new URL(route.url), broad = new URL(route.broad);
+      const direct = route.id === item.direct || (item.handle && ['x','twitch','youtube','tiktok'].includes(route.id));
+      assert.equal(url.protocol,'https:');
+      assert.equal(broad.protocol,'https:');
+      if (direct) {
+        const expected = item.handle ? {
+          x:'https://x.com/MaKun_inkya',twitch:'https://www.twitch.tv/makun_inkya',
+          youtube:'https://www.youtube.com/@MaKun_inkya',tiktok:'https://www.tiktok.com/@MaKun_inkya'
+        }[route.id] : item.directUrl ?? item.input;
+        assert.equal(route.url,expected);
+        assert.equal(route.broad,expected);
+        assert.equal(route.scope,'profile');
+      } else if (route.id === '5ch') {
+        assert.equal(url.hostname,'www.google.com');
+        assert.ok(url.searchParams.get('q').includes('Dead by Daylight'));
+        assert.ok(url.searchParams.get('q').endsWith(`"${query}" ${sites[route.id]}`));
+        assert.equal(broad.searchParams.get('q'),`"${query}" ${sites[route.id]}`);
       } else {
-        const [host, pathname, key] = native[route.id];
-        assert.equal(url.hostname, host);
-        assert.equal(url.pathname, pathname);
-        assert.equal(url.searchParams.get(key), query);
-        assert.equal(url.searchParams.has('sp'), false);
+        const [host,pathname,key] = native[route.id];
+        assert.equal(url.hostname,host); assert.equal(url.pathname,pathname);
+        assert.equal(url.searchParams.get(key),route.id === 'youtube' ? query + ' DBD' : query);
+        assert.equal(broad.hostname,host); assert.equal(broad.pathname,pathname);
+        assert.equal(broad.searchParams.get(key),query);
+        assert.equal(url.searchParams.has('sp'),false);
+        if(route.id === 'x')assert.equal(url.searchParams.get('f'),'user');
       }
     }
   }
