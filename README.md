@@ -1,4 +1,4 @@
-# P.S.D v3.5.3 — 内部検索は未実装
+# P.S.D v3.5.4 — 内部検索は未実装
 
 [アプリ](https://masaotokumoto12-ux.github.io/PlayerSearch-DBD/) / [共有版](https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site)
 
@@ -15,6 +15,9 @@ v3.5.3では「検索を広げる」を削除した。
 表示を隠すだけで内部検索が完成したとも扱わない。
 
 ## 保持している機能
+
+最初の入力欄を含む全入力欄の「消去」で、その欄の名前だけを空にできる。
+履歴や入力欄自体は削除せず、消去した状態を端末へ保存する。
 
 最大4入力。Steam・X・YouTube・Twitch・TikTok・5chの旧6経路の通信契約を維持する。
 旧URLキャッシュは10分、同一操作の重複名は送信前にまとめる。
@@ -54,6 +57,6 @@ node scripts/audit-search.mjs
 P0はサーバー側の候補取得とDBD根拠の取得、取得状態の区別。
 その実装と外部結果の検証が終わるまでは、検索機能完成と判定しない。
 
-表示版v3.5.3、旧検索通信契約v3.5.1。
+表示版v3.5.4、旧検索通信契約v3.5.1。
 今回の公開物はGitHub Pages向け。別ホストの共有版へ自動同期したとは扱わない。
 認証の過去確認記録は [AUTHENTICATION.md](./AUTHENTICATION.md)。

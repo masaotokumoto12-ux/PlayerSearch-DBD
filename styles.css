@@ -24,3 +24,9 @@ footer{font-size:11px;color:#c2b4b4;text-align:center;padding:26px 4px 8px}foote
 .history-day strong, #history-day-title { overflow-wrap: anywhere; }
 .history-day small { flex-shrink: 0; color: #c9b9a7; }
 .repeat-search { color: #e4c79c; white-space: nowrap; }
+
+/* Clear the text without removing the slot or touching search history. */
+.name-field{position:relative;flex:1;min-width:0}
+.name-field input{min-height:52px;padding-right:62px}
+.clear-name{position:absolute;right:4px;top:50%;transform:translateY(-50%);min-width:44px;min-height:44px;padding:0 6px;border:0;background:transparent;color:var(--muted);font-size:12px}
+.clear-name:not(:disabled):active{color:var(--fg)}

@@ -244,7 +244,7 @@ function ee(e, t) {
 }
 //#endregion
 //#region client/app.js
-var _ = "3.5.1", v = "3.5.3", y = 4, te = "psd-core-v4", b = 4, ne = 256, x = Object.freeze([
+var _ = "3.5.1", v = "3.5.4", y = 4, te = "psd-core-v4", b = 4, ne = 256, x = Object.freeze([
 	"dps-state",
 	"dps-core-v6",
 	"psd-core-v3",
@@ -474,12 +474,15 @@ function Z(e) {
 	let t = N.inputs.map((e, t) => {
 		let n = k("div", "name-row"), r = k("label", "name-label", `プレイヤー${t + 1}`);
 		r.htmlFor = `name-${t}`;
-		let i = k("input");
+		let i = k("input"), field = k("div", "name-field"), clear = A("消去", "clear-name", () => {
+			N.inputs[t] = "", i.value = "", clear.disabled = !0, J(), i.focus();
+		}, `プレイヤー${t + 1}の名前を消去`);
+		clear.id = `clear-name-${t}`, clear.disabled = !e.length;
 		return i.id = `name-${t}`, i.type = "text", i.value = e, i.placeholder = "プレイヤー名を入力", i.maxLength = 256, i.autocomplete = "off", i.spellcheck = !1, i.addEventListener("input", () => {
-			N.inputs[t] = i.value, J();
+			N.inputs[t] = i.value, clear.disabled = !i.value.length, J();
 		}), i.addEventListener("keydown", (e) => {
 			e.key === "Enter" && !e.isComposing && e.keyCode !== 229 && (e.preventDefault(), Ce());
-		}), n.append(r, i), N.inputs.length > 1 && n.append(A("×", "remove", () => {
+		}), field.append(i, clear), n.append(r, field), N.inputs.length > 1 && n.append(A("×", "remove", () => {
 			N.inputs.splice(t, 1), J(), Z(Math.min(t, N.inputs.length - 1));
 		}, `プレイヤー${t + 1}の入力欄を削除`)), n;
 	});
