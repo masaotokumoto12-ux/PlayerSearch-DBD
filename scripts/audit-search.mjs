@@ -1,5 +1,6 @@
 // Read-only contract check of the public API; never changes shared settings.
 import assert from 'node:assert/strict';
+import {setTimeout as wait} from 'node:timers/promises';
 
 const api = 'https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site/api/routes';
 // Wire contract is intentionally independent of the client display release.
@@ -41,13 +42,21 @@ const smokeInputs = new Set(['MaKun_inkya','ヅオパン','@MaKun_inkya','https:
 const selectedCases = process.argv.includes('--full') ? cases : cases.filter(item => smokeInputs.has(item.input));
 
 const batches = [];
+let lastPostAt = -Infinity, observedStatus = null, postsAttempted = 0;
+try {
 for (let offset = 0; offset < selectedCases.length; offset += 4) {
   const batch = selectedCases.slice(offset, offset + 4);
+  const remaining = 2000 - (Date.now() - lastPostAt);
+  if (remaining > 0) await wait(remaining);
+  lastPostAt = Date.now();
+  postsAttempted++;
+  observedStatus = null;
   const response = await fetch(api, {
     method: 'POST', headers: {'Content-Type': 'application/json', Origin: origin},
     body: JSON.stringify({names: batch.map(item => item.input)}),
     signal: AbortSignal.timeout(20000)
   });
+  observedStatus = response.status;
   assert.equal(response.status, 200, `API HTTP ${response.status}`);
   assert.equal(response.headers.get('access-control-allow-origin'), origin);
   const value = await response.json();
@@ -94,7 +103,26 @@ for (let offset = 0; offset < selectedCases.length; offset += 4) {
 const summary = {
   checkedAt: new Date().toISOString(), versions: [...new Set(batches.map(batch => batch.version))],
   modes: [...new Set(batches.map(batch => batch.settings.mode))],
-  inputs: selectedCases.length, links: selectedCases.length * ids.length, apiPosts:batches.length, externalSearchRequests:0, status: 'passed',
-  scope: 'URL generation, response order and CORS only; accounts and external search results remain unverified'
+  inputs: selectedCases.length, links: selectedCases.length * ids.length, apiPosts:batches.length,
+  auditExternalSearchRequests:0, serverExternalSearchRequests:'unverified',
+  status:'incomplete', contractStatus:'passed', purposeStatus:'unmet',
+  accountExistence:'unverified', dbdEvidence:'unverified', identityMatch:'unverified',
+  scope:'Legacy URL generation, response order and CORS only; this is not an internal account search test',
+  reason:'The current client has no discovered-account results; valid search destinations do not satisfy CANONICAL.md'
 };
 console.log(JSON.stringify(process.argv.includes('--json') ? {...summary, batches} : summary, null, 2));
+// A successful legacy contract must never be the project's completion gate.
+process.exitCode = 1;
+} catch (error) {
+  const restricted = [403,429].includes(observedStatus);
+  const invalidContract = error.code === 'ERR_ASSERTION' && observedStatus === 200;
+  console.log(JSON.stringify({
+    checkedAt:new Date().toISOString(),
+    status:restricted?'restricted':invalidContract?'failed':'unverified',
+    contractStatus:invalidContract?'failed':'unverified', purposeStatus:'unverified',
+    apiPostsAttempted:postsAttempted, completedBatches:batches.length,
+    httpStatus:observedStatus, reason:error.message,
+    scope:'A failed or unavailable API check proves neither account absence nor a completed search'
+  },null,2));
+  process.exitCode = invalidContract ? 1 : 2;
+}

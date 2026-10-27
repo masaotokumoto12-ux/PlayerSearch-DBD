@@ -244,7 +244,7 @@ function ee(e, t) {
 }
 //#endregion
 //#region client/app.js
-var _ = "3.5.1", v = "3.5.2", y = 4, te = "psd-core-v4", b = 4, ne = 256, x = Object.freeze([
+var _ = "3.5.1", v = "3.5.3", y = 4, te = "psd-core-v4", b = 4, ne = 256, x = Object.freeze([
 	"dps-state",
 	"dps-core-v6",
 	"psd-core-v3",
@@ -412,7 +412,7 @@ var j;
 try {
 	j = window.localStorage;
 } catch {}
-var M = ae(j), le = document.querySelector("meta[name=\"psd-api-base\"]")?.content, N = M.state, P = M.blocked ?? !1, ue = new URL(le || "./api/", document.baseURI).href, F, I = 0, L = !1, de = new Set(M.warnings), fe = /* @__PURE__ */ new Map(), R = /* @__PURE__ */ new Set(), z = "psd-shared-routes-v2", B = /* @__PURE__ */ new Map(), V = /* @__PURE__ */ new Map(), pe = /* @__PURE__ */ new Map(), H = d(j), me = ee(j, globalThis.indexedDB), U = 0, he, W = [], ge = P, _e, G = !1, K = !1;
+var M = ae(j), le = document.querySelector("meta[name=\"psd-api-base\"]")?.content, N = M.state, P = M.blocked ?? !1, ue = new URL(le || "./api/", document.baseURI).href, F, I = 0, L = !1, de = new Set(M.warnings), fe = /* @__PURE__ */ new Map(), R = /* @__PURE__ */ new Set(), z = "psd-shared-routes-v2", B = /* @__PURE__ */ new Map(), V = /* @__PURE__ */ new Map(), pe = /* @__PURE__ */ new Map(), H = d(j), me = ee(j, globalThis.indexedDB), U = 0, he, W = [], ge = P, _e, G = !1;
 try {
 	let e = JSON.parse(j?.getItem(z) || "null");
 	if (e?.version === _ && Array.isArray(e.entries)) for (let t of e.entries.slice(-100)) {
@@ -489,15 +489,12 @@ function Q(e = !1) {
 	let t = N.resultNames.map((t) => {
 		let n = k("article", "player-block knight-result");
 		n.append(k("h2", "result-player-name", t));
-		let r = k("nav", "media-grid");
-		r.setAttribute("aria-label", `${t}の媒体別検索先`);
-		for (let n of e ? [] : B.get(t) ?? []) {
-			let e = ce(n.name, K ? n.broad : n.url);
-			e.className = `media-link media-${n.id}`, e.setAttribute("aria-label", `${t}を${n.name}で${!K && n.scope === "dbd" ? "DBD関連検索" : n.scope === "profile" ? "ID・URLを開く・DBD関連未確認" : "検索"}（新しいタブ）`), r.append(e);
-		}
-		return n.append(r), r.childElementCount || n.append(k("p", "hint", e ? "検索先を準備中…" : "検索ボタンで検索先を準備できます。")), n;
+		// The legacy routes API returns destinations, not discovered accounts.
+		// Even scope=profile can be derived from user input and proves no existence.
+		n.append(k("p", "hint", e ? "検索の応答を待っています…" : B.has(t) ? "候補アカウントは未取得です。現在、内部検索は利用できません。" : "候補アカウントは未取得です。"));
+		return n;
 	});
-	O("results").replaceChildren(...t), O("expand-search").hidden = e || !N.resultNames.some((e) => B.get(e)?.some((e) => e.broad !== e.url)), O("expand-search").textContent = K ? "DBD関連に戻す" : "検索を広げる", O("expand-search").setAttribute("aria-pressed", String(K));
+	O("results").replaceChildren(...t);
 }
 function be() {
 	return matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
@@ -569,7 +566,7 @@ async function Ce() {
 	if ([...R].some((e) => e.path === "routes")) return;
 	ye();
 	let t = I;
-	K = !1, N.resultNames = e;
+	N.resultNames = [...new Set(e)];
 	let r = [...new Set(e)].filter((e) => {
 		let t = Date.now() - (V.get(e) ?? -Infinity);
 		return !B.has(e) || t < 0 || t >= 6e5;
@@ -634,9 +631,7 @@ function Ee(e) {
 function De() {
 	O("app-version").textContent = `v${v}`, O("add-player").addEventListener("click", () => {
 		N.inputs.length >= b || (N.inputs.push(""), J(), Z(N.inputs.length - 1));
-	}), O("search").addEventListener("click", Ce), O("expand-search").addEventListener("click", () => {
-		K = !K, Q();
-	});
+	}), O("search").addEventListener("click", Ce);
 	for (let e of ["data", "history"]) O(`open-${e}`).addEventListener("click", () => {
 		e === "history" ? $() : O("history-dialog").close(), O(`${e}-dialog`).showModal();
 	}), O(`close-${e}`).addEventListener("click", () => O(`${e}-dialog`).close()), O(`${e}-dialog`).addEventListener("keydown", (e) => {
