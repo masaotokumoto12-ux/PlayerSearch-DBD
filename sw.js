@@ -1,14 +1,16 @@
 'use strict';
 
-const VERSION = '3.5.4';
+const VERSION = '3.5.5';
 const ROOT = new URL(self.registration.scope);
 // Cache Storage is shared by all repositories on a github.io origin.
 // Only remove this app's caches, identified by its complete scope path.
 const PREFIX = `psd:${encodeURIComponent(ROOT.pathname)}:`;
 const CACHE = `${PREFIX}${VERSION}`;
 const ASSETS = [
-  './index.html', './app.js?v=3.5.4', './styles.css?v=3.5.4',
-  './manifest.webmanifest', './assets/knight-castle.webp', './assets/iron-frame.svg',
+  './index.html', './app.js?v=3.5.5', './styles.css?v=3.5.5',
+  './manifest.webmanifest', './assets/knight-castle.webp', './assets/psd-wordmark.svg',
+  './assets/media/steam.svg', './assets/media/x.svg', './assets/media/youtube.svg',
+  './assets/media/twitch.svg', './assets/media/tiktok.svg', './assets/media/5ch.svg',
   './icons/knight-detective-eye-192-v1.png', './icons/knight-detective-eye-512-v1.png', './icons/knight-detective-eye-180-v1.png'
 ].map(path => new URL(path, ROOT).href);
 const INDEX = new URL('./index.html', ROOT).href;

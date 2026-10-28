@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; manifest-src 'self'; connect-src 'self' https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
   <meta name="psd-api-base" content="https://dbd-player-search.m-aa-k-one-for-all-a.chatgpt.site/api/">
-  <meta name="psd-version" content="3.5.4">
-  <meta name="theme-color" content="#0c0d0f">
+  <meta name="psd-version" content="3.5.5">
+  <meta name="theme-color" content="#090A0D">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,28 +16,39 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/knight-detective-eye-192-v1.png" type="image/png">
   <link rel="apple-touch-icon" href="./icons/knight-detective-eye-180-v1.png">
-  <link rel="stylesheet" href="./styles.css?v=3.5.4">
-  <script type="module" src="./app.js?v=3.5.4"></script>
+  <link rel="stylesheet" href="./styles.css?v=3.5.5">
+  <script type="module" src="./app.js?v=3.5.5"></script>
 </head>
 <body>
   <main>
     <header class="app-header">
-      <div class="brand"><h1>P.S.D</h1><p class="subtitle">Player Search DBD</p></div>
-      <nav class="header-actions" aria-label="アプリ操作">
-        <button id="open-history" class="icon-button" aria-label="履歴を開く"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2"/></svg></button>
-      </nav>
+      <div class="brand"><h1><img class="wordmark" src="./assets/psd-wordmark.svg" width="246" height="70" alt="P.S.D"></h1><p class="subtitle">Player Search DBD</p></div>
     </header>
     <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
     <section id="install-banner" class="panel install-banner" aria-label="iOSでの利用案内" hidden>
       <h2>ホーム画面から使えます</h2>
       <p>Safariの共有メニューから「ホーム画面に追加」を選んでください。ホーム画面でも使えます。履歴を移す前にバックアップしてください。</p>
     </section>
-    <section class="panel" aria-labelledby="players-title">
-      <div class="section-heading"><h2 id="players-title">対象プレイヤー</h2><span id="slot-count" class="muted"></span></div>
+    <section class="panel search-panel" aria-labelledby="players-title">
+      <div class="section-heading"><h2 id="players-title">プレイヤー名</h2><span id="slot-count" class="muted"></span></div>
       <div id="names-container"></div>
       <button id="add-player" class="button secondary full">＋ プレイヤーを追加</button>
+      <div class="media-roster" role="group" aria-label="検索対象の媒体。5chは掲示板情報">
+        <span class="roster-label">検索対象</span>
+        <ul class="media-strip">
+          <li title="Steam"><img src="./assets/media/steam.svg" width="22" height="22" alt="Steam"></li>
+          <li title="X"><img src="./assets/media/x.svg" width="20" height="20" alt="X"></li>
+          <li title="YouTube"><img src="./assets/media/youtube.svg" width="24" height="24" alt="YouTube"></li>
+          <li title="Twitch"><img src="./assets/media/twitch.svg" width="22" height="22" alt="Twitch"></li>
+          <li title="TikTok"><img src="./assets/media/tiktok.svg" width="22" height="22" alt="TikTok"></li>
+          <li title="5ch・掲示板情報"><img src="./assets/media/5ch.svg" width="28" height="28" alt="5ch・掲示板情報"></li>
+        </ul>
+      </div>
     </section>
-    <button id="search" class="button primary full">検索</button>
+    <button id="search" class="button primary full"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><span>検索</span></button>
+    <nav class="search-actions" aria-label="アプリ操作">
+      <button id="open-history" class="button history-trigger"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2"/></svg><span>日別履歴</span><span class="action-arrow" aria-hidden="true">↗</span></button>
+    </nav>
     <section id="results" aria-label="プレイヤーごとの検索結果（本人一致は未確認）" aria-live="polite"></section>
     <footer><span id="app-version"></span><span id="offline-status"></span><p>検索情報の一致は、同一人物の証明ではありません。</p></footer>
     <noscript><p>このアプリはJavaScriptを有効にすると使用できます。</p></noscript>
@@ -53,7 +64,7 @@
   <dialog id="history-dialog" aria-labelledby="history-title">
     <div class="dialog-heading"><h2 id="history-title">履歴</h2><button id="close-history" class="button secondary" autofocus>完了</button></div>
     <label for="history-filter">名前で絞り込む</label><input id="history-filter" type="search" autocomplete="off" placeholder="名前で検索">
-    <p class="hint">日付を選ぶと、その日の検索履歴を表示します。履歴は自動保存します。</p>
+    <p class="hint history-hint">日付をタップして履歴を開く</p>
     <div id="history-days" class="history-days"></div>
     <button id="open-data" class="button secondary full">バックアップ・更新</button>
     <button id="clear-history" class="button danger full">全履歴を削除</button>

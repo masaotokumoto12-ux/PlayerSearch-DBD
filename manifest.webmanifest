@@ -2,13 +2,13 @@
   "id": "./",
   "name": "P.S.D — DBD Player Search",
   "short_name": "P.S.D",
-  "description": "プレイヤー名から公開検索先をまとめて開くツール",
+  "description": "DBDプレイヤーの候補情報を確認するP.S.D。内部検索は現在未実装です。",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0c0d0f",
-  "theme_color": "#0c0d0f",
+  "background_color": "#090A0D",
+  "theme_color": "#090A0D",
   "icons": [
     {
       "src": "./icons/knight-detective-eye-192-v1.png",

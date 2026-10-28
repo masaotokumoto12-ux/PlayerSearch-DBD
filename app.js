@@ -244,7 +244,7 @@ function ee(e, t) {
 }
 //#endregion
 //#region client/app.js
-var _ = "3.5.1", v = "3.5.4", y = 4, te = "psd-core-v4", b = 4, ne = 256, x = Object.freeze([
+var _ = "3.5.1", v = "3.5.5", y = 4, te = "psd-core-v4", b = 4, ne = 256, x = Object.freeze([
 	"dps-state",
 	"dps-core-v6",
 	"psd-core-v3",
@@ -494,7 +494,8 @@ function Q(e = !1) {
 		n.append(k("h2", "result-player-name", t));
 		// The legacy routes API returns destinations, not discovered accounts.
 		// Even scope=profile can be derived from user input and proves no existence.
-		n.append(k("p", "hint", e ? "検索の応答を待っています…" : B.has(t) ? "候補アカウントは未取得です。現在、内部検索は利用できません。" : "候補アカウントは未取得です。"));
+		n.append(k("p", "hint result-status", e ? "検索の応答を待っています…" : "候補アカウントは未取得です。"));
+		n.setAttribute("aria-busy", String(e));
 		return n;
 	});
 	O("results").replaceChildren(...t);
