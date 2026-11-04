@@ -1,0 +1,26 @@
+name: P.S.D security and regression checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  client-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository without retaining credentials
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0 pinned
+        with:
+          persist-credentials: false
+      - name: Validate syntax and run offline security and client tests
+        run: |
+          node --version
+          node --check app.js
+          node --test tests/client-flow.test.mjs tests/security-boundaries.test.mjs
