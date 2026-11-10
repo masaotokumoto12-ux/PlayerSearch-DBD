@@ -124,3 +124,19 @@ test('5ch evidence is explicitly a thread rather than a social profile',()=>{
   assert.equal(out.candidates[0].evidence[0].kind,'thread');
   assert.equal(out.candidates[0].identityConfirmed,false);
 });
+
+test('5ch long excerpts retain a bounded readable passage without affecting SNS excerpt cap',()=>{
+  const long='長'.repeat(6000);
+  for(const [media,url,limit] of [
+    ['5ch','https://itest.5ch.net/test/read.cgi/gamef/1760000000/',2048],
+    ['x','https://x.com/example',280]
+  ]){
+    const response={results:[{name,sources:{[media]:{status:'found',candidates:[{
+      url,discovered:true,evidence:[{url,verified:true,excerpt:long}]
+    }]}}}]};
+    const out=normalizeCandidates(response,[name])[0].sources.find(s=>s.media===media);
+    assert.equal(out.candidates.length,1);
+    assert.equal(out.candidates[0].evidence[0].excerpt.length,limit);
+    assert.equal(out.candidates[0].evidence[0].excerpt,long.slice(0,limit));
+  }
+});
