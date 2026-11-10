@@ -63,3 +63,29 @@ test('search paths cannot masquerade as a discovered profile',()=>{
     ['x','https://x.com/example/status/12345']
   ])assert.equal(normalizeCandidates(result(media,url),[name])[0].sources.find(x=>x.media===media).candidates.length,0,url);
 });
+
+test('multiple response rows and repeated profiles retain distinct verified posts',()=>{
+  const profile='https://x.com/example';
+  const post1='https://x.com/example/status/111';
+  const post2='https://x.com/example/status/222';
+  const row=(url,dbdRelated=false)=>({name,sources:{x:{status:'found',candidates:[{
+    url:profile,discovered:true,dbdRelated,evidence:[{url,verified:true,kind:'post'}]
+  }]}}});
+  const out=normalizeCandidates({results:[row(post1),row(post2,true)]},[name])[0].sources[1];
+  assert.equal(out.status,'found');
+  assert.equal(out.candidates.length,1);
+  assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),[post1,post2]);
+  assert.equal(out.candidates[0].dbdRelated,true);
+  assert.equal(out.candidates[0].identityConfirmed,false);
+});
+test('a restricted duplicate row retains valid evidence but remains partial',()=>{
+  const profile='https://www.youtube.com/@example';
+  const response={results:[
+    {name,sources:{youtube:{status:'found',candidates:[{url:profile,discovered:true,evidence:[{url:'https://www.youtube.com/watch?v=one',verified:true,kind:'video'}]}]}}},
+    {name,sources:{youtube:{status:'restricted',candidates:[{url:profile,discovered:true,evidence:[{url:'https://www.youtube.com/watch?v=two',verified:true,kind:'video'}]}]}}}
+  ]};
+  const out=normalizeCandidates(response,[name])[0].sources[2];
+  assert.equal(out.status,'partial');
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].evidence.length,2);
+});
