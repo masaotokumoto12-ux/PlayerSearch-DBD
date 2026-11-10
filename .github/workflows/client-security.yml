@@ -23,4 +23,5 @@ jobs:
         run: |
           node --version
           node --check app.js
-          node --test tests/client-flow.test.mjs tests/security-boundaries.test.mjs
+          node --check lib/candidate-evidence.mjs
+          node --test tests/client-flow.test.mjs tests/security-boundaries.test.mjs tests/candidate-evidence.test.mjs
