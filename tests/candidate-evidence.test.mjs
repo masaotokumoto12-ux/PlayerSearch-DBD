@@ -116,3 +116,11 @@ test('accepts same-account evidence while rejecting unrelated evidence',()=>{
   assert.equal(out.candidates.length,1);
   assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),[good]);
 });
+
+test('5ch evidence is explicitly a thread rather than a social profile',()=>{
+  const thread='https://itest.5ch.net/test/read.cgi/gamef/1760000000/';
+  const out=normalizeCandidates(result('5ch',thread),[name])[0].sources.find(s=>s.media==='5ch');
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].evidence[0].kind,'thread');
+  assert.equal(out.candidates[0].identityConfirmed,false);
+});
