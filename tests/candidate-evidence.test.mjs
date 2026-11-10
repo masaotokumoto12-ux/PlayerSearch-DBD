@@ -89,3 +89,30 @@ test('a restricted duplicate row retains valid evidence but remains partial',()=
   assert.equal(out.candidates.length,1);
   assert.equal(out.candidates[0].evidence.length,2);
 });
+
+test('rejects verified evidence from a different X, TikTok or Twitch account',()=>{
+  for(const [media,profile,other] of [
+    ['x','https://x.com/actual','https://x.com/unrelated/status/123'],
+    ['tiktok','https://www.tiktok.com/@actual','https://www.tiktok.com/@unrelated/video/123'],
+    ['twitch','https://www.twitch.tv/actual','https://www.twitch.tv/unrelated/clip/abc']
+  ]){
+    const out=normalizeCandidates({results:[{name,sources:{[media]:{status:'found',candidates:[{
+      url:profile,discovered:true,evidence:[{url:other,verified:true,kind:'post'}]
+    }]}}}]},[name])[0].sources.find(s=>s.media===media);
+    assert.equal(out.candidates.length,0,media);
+    assert.equal(out.status,'not_fetched',media);
+  }
+});
+test('accepts same-account evidence while rejecting unrelated evidence',()=>{
+  const profile='https://x.com/actual';
+  const good='https://x.com/actual/status/123';
+  const bad='https://x.com/unrelated/status/456';
+  const out=normalizeCandidates({results:[{name,sources:{x:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence:[
+      {url:bad,verified:true,kind:'post'},
+      {url:good,verified:true,kind:'post'}
+    ]
+  }]}}}]},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.candidates.length,1);
+  assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),[good]);
+});
