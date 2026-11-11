@@ -204,3 +204,27 @@ test('all confirmed successful rows still report found',()=>{
   assert.equal(out.status,'found');
   assert.equal(out.candidates.length,1);
 });
+
+
+test('unverified duplicate row cannot promote DBD relevance',()=>{
+  const profile='https://x.com/actual';
+  const out=normalizeCandidates({results:[
+    {name,sources:{x:{status:'found',candidates:[{url:profile,discovered:true,dbdRelated:false,evidence:[{url:'https://x.com/actual/status/111',verified:true}]}]}}},
+    {name,sources:{x:{status:'found',candidates:[{url:profile,discovered:true,dbdRelated:true,evidence:[{url:'https://x.com/other/status/222',verified:true}]}]}}}
+  ]},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].dbdRelated,false);
+  assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),['https://x.com/actual/status/111']);
+});
+
+test('duplicate verified same-account evidence may promote DBD relevance',()=>{
+  const profile='https://x.com/actual';
+  const post='https://x.com/actual/status/111';
+  const row=dbdRelated=>({name,sources:{x:{status:'found',candidates:[{
+    url:profile,discovered:true,dbdRelated,evidence:[{url:post,verified:true}]
+  }]}}});
+  const out=normalizeCandidates({results:[row(false),row(true)]},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].dbdRelated,true);
+  assert.equal(out.candidates[0].evidence.length,1);
+});
