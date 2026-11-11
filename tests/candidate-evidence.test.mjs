@@ -361,3 +361,14 @@ test('5ch thread URLs reject arbitrary trailing path components',()=>{
     assert.equal(normalizeCandidates(result('5ch',base+suffix),[name])[0].sources[5].candidates.length,1);
   }
 });
+
+test('YouTube evidence rejects ambiguous repeated video IDs and retains one valid ID',()=>{
+  const profile='https://www.youtube.com/@example';
+  const check=link=>normalizeCandidates({results:[{name,sources:{youtube:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence:[{url:link,verified:true,kind:'video'}]
+  }]}}}]},[name])[0].sources[2];
+  assert.equal(check('https://www.youtube.com/watch?v=one&v=two').candidates.length,0);
+  assert.equal(check('https://www.youtube.com/watch?v=').candidates.length,0);
+  assert.equal(check('https://www.youtube.com/watch?v='+ 'x'.repeat(65)).candidates.length,0);
+  assert.equal(check('https://www.youtube.com/watch?v=one').candidates.length,1);
+});
