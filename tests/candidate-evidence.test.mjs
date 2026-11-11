@@ -351,3 +351,13 @@ test('evidence validation continues after storage reaches twelve without storing
   assert.equal(source.candidates[0].evidence.length,12);
   assert.equal(source.candidates[0].dbdRelated,true);
 });
+
+test('5ch thread URLs reject arbitrary trailing path components',()=>{
+  const base='https://itest.5ch.net/test/read.cgi/gamef/1760000000/';
+  for(const suffix of ['random','123/garbage','foo/bar']){
+    assert.equal(normalizeCandidates(result('5ch',base+suffix),[name])[0].sources[5].candidates.length,0);
+  }
+  for(const suffix of ['','100','100-200','l50']){
+    assert.equal(normalizeCandidates(result('5ch',base+suffix),[name])[0].sources[5].candidates.length,1);
+  }
+});
