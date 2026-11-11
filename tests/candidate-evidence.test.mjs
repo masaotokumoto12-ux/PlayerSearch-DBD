@@ -488,3 +488,18 @@ test('YouTube profile paths reject encoded separators and invalid channel IDs',(
     'https://www.youtube.com/user/valid_name'
   ])assert.equal(check(url).candidates.length,1,url);
 });
+
+test('Steam vanity paths reject encoded separators and malformed IDs',()=>{
+  const check=url=>normalizeCandidates(result('steam',url),[name])[0].sources[0];
+  for(const url of [
+    'https://steamcommunity.com/id/bad%2Fname',
+    'https://steamcommunity.com/id/bad%20name',
+    'https://steamcommunity.com/id/bad!name',
+    'https://steamcommunity.com/id/'+'a'.repeat(101),
+    'https://steamcommunity.com/profiles/123'
+  ])assert.equal(check(url).candidates.length,0,url);
+  for(const url of [
+    'https://steamcommunity.com/id/valid.name_12',
+    'https://steamcommunity.com/profiles/76561198000000000'
+  ])assert.equal(check(url).candidates.length,1,url);
+});
