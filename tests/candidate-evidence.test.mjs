@@ -503,3 +503,14 @@ test('Steam vanity paths reject encoded separators and malformed IDs',()=>{
     'https://steamcommunity.com/profiles/76561198000000000'
   ])assert.equal(check(url).candidates.length,1,url);
 });
+
+test('5ch board URLs reject encoded separators and control characters',()=>{
+  const check=url=>normalizeCandidates(result('5ch',url),[name])[0].sources[5];
+  for(const url of [
+    'https://itest.5ch.net/test/read.cgi/board%2Fother/1234567890',
+    'https://itest.5ch.net/test/read.cgi/board%5Cother/1234567890',
+    'https://itest.5ch.net/test/read.cgi/board%00other/1234567890',
+    'https://itest.5ch.net/board%2Fother/test/read.cgi/board%2Fother/1234567890'
+  ])assert.equal(check(url).candidates.length,0,url);
+  assert.equal(check('https://itest.5ch.net/test/read.cgi/board/1234567890').candidates.length,1);
+});
