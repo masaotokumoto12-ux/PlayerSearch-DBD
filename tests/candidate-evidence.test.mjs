@@ -266,3 +266,25 @@ test('conflicting found and not_found rows preserve evidence and report partial'
   assert.deepEqual(out.candidates.map(c=>c.url),[url]);
   assert.equal(out.candidates[0].identityConfirmed,false);
 });
+
+test('5ch board-prefixed route cannot borrow evidence from another board',()=>{
+  const candidate='https://itest.5ch.net/gamef/test/read.cgi/gamef/1760000000/';
+  const wrong='https://itest.5ch.net/other/test/read.cgi/gamef/1760000000/';
+  const response={results:[{name,sources:{'5ch':{status:'found',candidates:[{
+    url:candidate,discovered:true,evidence:[{url:wrong,verified:true,kind:'thread'}]
+  }]}}}]};
+  const out=normalizeCandidates(response,[name])[0].sources[5];
+  assert.equal(out.candidates.length,0);
+  assert.equal(out.status,'not_fetched');
+  response.results[0].sources['5ch'].candidates[0].evidence.push({url:candidate,verified:true});
+  assert.equal(normalizeCandidates(response,[name])[0].sources[5].candidates.length,1);
+});
+
+test('5ch thread route and board route cannot validate one another by numeric ID',()=>{
+  const candidate='https://itest.5ch.net/thread/1760000000';
+  const wrong='https://itest.5ch.net/test/read.cgi/gamef/1760000000/';
+  const response={results:[{name,sources:{'5ch':{status:'found',candidates:[{
+    url:candidate,discovered:true,evidence:[{url:wrong,verified:true}]
+  }]}}}]};
+  assert.equal(normalizeCandidates(response,[name])[0].sources[5].candidates.length,0);
+});
