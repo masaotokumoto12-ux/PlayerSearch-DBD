@@ -384,3 +384,14 @@ test('truncated candidate inputs never claim complete success',()=>{
   assert.equal(empty.status,'partial');
   assert.equal(empty.candidates.length,0);
 });
+
+test('Twitch candidate must be a single valid channel path; clips only as evidence',()=>{
+  for(const url of ['https://www.twitch.tv/example/videos','https://www.twitch.tv/example/clip/abc','https://www.twitch.tv/example/other','https://www.twitch.tv/bad.name']){
+    const source=normalizeCandidates(result('twitch',url),[name])[0].sources[3];
+    assert.equal(source.candidates.length,0,url);
+  }
+  const url='https://www.twitch.tv/example';
+  const out=normalizeCandidates({results:[{name,sources:{twitch:{status:'found',candidates:[{url,discovered:true,evidence:[{url:'https://www.twitch.tv/example/clip/abc-123',verified:true,kind:'video'}]}]}}}]},[name])[0].sources[3];
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].evidence[0].url,'https://www.twitch.tv/example/clip/abc-123');
+});
