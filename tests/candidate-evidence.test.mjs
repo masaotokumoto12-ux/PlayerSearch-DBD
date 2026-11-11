@@ -471,3 +471,20 @@ test('TikTok handle syntax rejects encoded separators, spaces and oversized name
   for(const url of ['https://www.tiktok.com/@valid.name_12','https://www.tiktok.com/@valid_12'])
     assert.equal(check(url).candidates.length,1,url);
 });
+
+
+test('YouTube profile paths reject encoded separators and invalid channel IDs',()=>{
+  const check=url=>normalizeCandidates(result('youtube',url),[name])[0].sources[2];
+  for(const url of [
+    'https://www.youtube.com/@bad%2Fname',
+    'https://www.youtube.com/@bad%20name',
+    'https://www.youtube.com/@'+'a'.repeat(31),
+    'https://www.youtube.com/channel/not-a-channel-id',
+    'https://www.youtube.com/user/bad%2Fname'
+  ])assert.equal(check(url).candidates.length,0,url);
+  for(const url of [
+    'https://www.youtube.com/@valid.name_12',
+    'https://www.youtube.com/channel/UC'+'a'.repeat(22),
+    'https://www.youtube.com/user/valid_name'
+  ])assert.equal(check(url).candidates.length,1,url);
+});
