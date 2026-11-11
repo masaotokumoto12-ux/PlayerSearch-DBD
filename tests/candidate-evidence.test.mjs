@@ -288,3 +288,34 @@ test('5ch thread route and board route cannot validate one another by numeric ID
   }]}}}]};
   assert.equal(normalizeCandidates(response,[name])[0].sources[5].candidates.length,0);
 });
+
+test('YouTube video evidence with a different declared channel owner is rejected',()=>{
+  const profile='https://www.youtube.com/@actual';
+  const video='https://www.youtube.com/watch?v=video123';
+  const response={results:[{name,sources:{youtube:{status:'found',candidates:[{
+    url:profile,discovered:true,dbdRelated:true,evidence:[{
+      url:video,verified:true,kind:'video',channelUrl:'https://www.youtube.com/@unrelated'
+    }]
+  }]}}}]};
+  const out=normalizeCandidates(response,[name])[0].sources[2];
+  assert.equal(out.candidates.length,0);
+  assert.equal(out.status,'not_fetched');
+  response.results[0].sources.youtube.candidates[0].evidence[0].channelUrl=profile;
+  const valid=normalizeCandidates(response,[name])[0].sources[2];
+  assert.equal(valid.candidates.length,1);
+  assert.equal(valid.candidates[0].dbdRelated,true);
+});
+test('YouTube owner conflict cannot promote a duplicate profile to DBD-related',()=>{
+  const profile='https://www.youtube.com/@actual';
+  const row=(dbdRelated,evidence)=>({name,sources:{youtube:{status:'found',candidates:[{
+    url:profile,discovered:true,dbdRelated,evidence
+  }]}}});
+  const out=normalizeCandidates({results:[
+    row(false,[{url:profile,verified:true}]),
+    row(true,[{url:'https://www.youtube.com/watch?v=video123',verified:true,
+      channelUrl:'https://www.youtube.com/@unrelated'}])
+  ]},[name])[0].sources[2];
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].dbdRelated,false);
+  assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),[profile]);
+});
