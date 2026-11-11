@@ -155,3 +155,14 @@ test('5ch evidence from a different thread cannot validate a candidate',()=>{
   assert.equal(valid.candidates.length,1);
   assert.deepEqual(valid.candidates[0].evidence.map(e=>e.url),[candidate]);
 });
+
+test('5ch evidence on a different host cannot verify a thread even with identical board and ID',()=>{
+  const candidate='https://itest.5ch.net/test/read.cgi/gamef/1760000000/';
+  const mirror='https://www.2ch.sc/test/read.cgi/gamef/1760000000/';
+  const response={results:[{name,sources:{'5ch':{status:'found',candidates:[{
+    url:candidate,discovered:true,evidence:[{url:mirror,verified:true,kind:'thread'}]
+  }]}}}]};
+  const source=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='5ch');
+  assert.equal(source.candidates.length,0);
+  assert.equal(source.status,'not_fetched');
+});
