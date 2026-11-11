@@ -319,3 +319,16 @@ test('YouTube owner conflict cannot promote a duplicate profile to DBD-related',
   assert.equal(out.candidates[0].dbdRelated,false);
   assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),[profile]);
 });
+
+
+test('candidate evidence cannot turn an unfinished source into full success',()=>{
+  const url='https://x.com/example';
+  for(const status of ['not_fetched','not_found']){
+    const out=normalizeCandidates({results:[{name,sources:{x:{status,candidates:[{
+      url,discovered:true,evidence:[{url,verified:true}]
+    }]}}}]},[name])[0].sources.find(s=>s.media==='x');
+    assert.equal(out.status,'partial',status);
+    assert.equal(out.candidates.length,1);
+    assert.equal(out.candidates[0].identityConfirmed,false);
+  }
+});
