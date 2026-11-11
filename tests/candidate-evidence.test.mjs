@@ -166,3 +166,21 @@ test('5ch evidence on a different host cannot verify a thread even with identica
   assert.equal(source.candidates.length,0);
   assert.equal(source.status,'not_fetched');
 });
+
+test('repeated response rows cannot bypass the twelve-evidence cap',()=>{
+  const profile='https://x.com/example';
+  const rows=Array.from({length:4},(_,row)=>({
+    name,sources:{x:{status:'found',candidates:[{
+      url:profile,discovered:true,evidence:Array.from({length:8},(_,i)=>({
+        url:'https://x.com/example/status/'+String(100+row*8+i),
+        verified:true,kind:'post'
+      }))
+    }]}}
+  }));
+  const out=normalizeCandidates({results:rows},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.status,'found');
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].evidence.length,12);
+  assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),
+    Array.from({length:12},(_,i)=>'https://x.com/example/status/'+String(100+i)));
+});
