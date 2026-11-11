@@ -372,3 +372,15 @@ test('YouTube evidence rejects ambiguous repeated video IDs and retains one vali
   assert.equal(check('https://www.youtube.com/watch?v='+ 'x'.repeat(65)).candidates.length,0);
   assert.equal(check('https://www.youtube.com/watch?v=one').candidates.length,1);
 });
+
+
+test('truncated candidate inputs never claim complete success',()=>{
+  const profile=i=>'https://x.com/player'+i;
+  const candidate=i=>({url:profile(i),discovered:true,evidence:[{url:profile(i),verified:true}]});
+  const out=normalizeCandidates({results:[{name,sources:{x:{status:'found',candidates:Array.from({length:101},(_,i)=>candidate(i))}}}]},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.candidates.length,100);
+  assert.equal(out.status,'partial');
+  const empty=normalizeCandidates({results:[{name,sources:{x:{status:'found',candidates:Array.from({length:101},()=>({discovered:false}))}}}]},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(empty.status,'partial');
+  assert.equal(empty.candidates.length,0);
+});
