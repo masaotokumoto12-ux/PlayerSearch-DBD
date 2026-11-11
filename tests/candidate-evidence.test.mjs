@@ -332,3 +332,22 @@ test('candidate evidence cannot turn an unfinished source into full success',()=
     assert.equal(out.candidates[0].identityConfirmed,false);
   }
 });
+
+test('evidence validation continues after storage reaches twelve without storing extra URLs',()=>{
+  const profile='https://x.com/actual';
+  let inspected=false;
+  const evidence=Array.from({length:12},(_,i)=>({
+    url:'https://x.com/actual/status/'+(100+i),verified:true,kind:'post'
+  }));
+  const later={verified:true,kind:'post'};
+  Object.defineProperty(later,'url',{get(){inspected=true;return 'https://x.com/actual/status/999';}});
+  evidence.push(later);
+  const response={results:[{name,sources:{x:{status:'found',candidates:[{
+    url:profile,discovered:true,dbdRelated:true,evidence
+  }]}}}]};
+  const source=normalizeCandidates(response,[name])[0].sources[1];
+  assert.equal(inspected,true,'bounded verification scan must inspect later evidence');
+  assert.equal(source.candidates.length,1);
+  assert.equal(source.candidates[0].evidence.length,12);
+  assert.equal(source.candidates[0].dbdRelated,true);
+});
