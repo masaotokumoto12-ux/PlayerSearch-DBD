@@ -456,3 +456,18 @@ test('YouTube evidence rejects malformed shorts/live/watch video identifiers',()
     'https://www.youtube.com/watch?v=abc_123-xyz'
   ])assert.equal(check(link).candidates.length,1,link);
 });
+
+
+test('TikTok handle syntax rejects encoded separators, spaces and oversized names',()=>{
+  const check=url=>normalizeCandidates({results:[{name,sources:{tiktok:{status:'found',candidates:[{
+    url,discovered:true,evidence:[{url,verified:true,kind:'profile'}]
+  }]}}}]},[name])[0].sources[4];
+  for(const url of [
+    'https://www.tiktok.com/@bad%2Fname',
+    'https://www.tiktok.com/@bad%20name',
+    'https://www.tiktok.com/@'+'a'.repeat(25),
+    'https://www.tiktok.com/@bad!name'
+  ])assert.equal(check(url).candidates.length,0,url);
+  for(const url of ['https://www.tiktok.com/@valid.name_12','https://www.tiktok.com/@valid_12'])
+    assert.equal(check(url).candidates.length,1,url);
+});
