@@ -140,3 +140,18 @@ test('5ch long excerpts retain a bounded readable passage without affecting SNS 
     assert.equal(out.candidates[0].evidence[0].excerpt,long.slice(0,limit));
   }
 });
+
+test('5ch evidence from a different thread cannot validate a candidate',()=>{
+  const candidate='https://itest.5ch.net/test/read.cgi/gamef/1760000000/';
+  const unrelated='https://itest.5ch.net/test/read.cgi/gamef/1760000001/';
+  const response={results:[{name,sources:{'5ch':{status:'found',candidates:[{
+    url:candidate,discovered:true,evidence:[{url:unrelated,verified:true,kind:'thread'}]
+  }]}}}]};
+  const out=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='5ch');
+  assert.equal(out.candidates.length,0);
+  assert.equal(out.status,'not_fetched');
+  response.results[0].sources['5ch'].candidates[0].evidence.push({url:candidate,verified:true,kind:'thread'});
+  const valid=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='5ch');
+  assert.equal(valid.candidates.length,1);
+  assert.deepEqual(valid.candidates[0].evidence.map(e=>e.url),[candidate]);
+});
