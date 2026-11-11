@@ -253,3 +253,16 @@ test('unrelated row cannot promote DBD relevance after evidence cap',()=>{
   assert.equal(out.candidates[0].evidence.length,12);
   assert.equal(out.candidates[0].dbdRelated,false);
 });
+
+
+test('conflicting found and not_found rows preserve evidence and report partial',()=>{
+  const url='https://x.com/example';
+  const response={results:[
+    {name,sources:{x:{status:'found',candidates:[{url,discovered:true,evidence:[{url,verified:true}]}]}}},
+    {name,sources:{x:{status:'not_found'}}}
+  ]};
+  const out=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.status,'partial');
+  assert.deepEqual(out.candidates.map(c=>c.url),[url]);
+  assert.equal(out.candidates[0].identityConfirmed,false);
+});
