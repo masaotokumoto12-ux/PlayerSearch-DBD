@@ -412,3 +412,14 @@ test('more than 100 evidence entries yields partial, even when first 100 validat
   assert.equal(noMatch.status,'partial');
   assert.equal(noMatch.candidates.length,0);
 });
+
+test('Steam profile evidence must match the candidate account',()=>{
+  const profile='https://steamcommunity.com/id/actual';
+  const other='https://steamcommunity.com/id/unrelated';
+  const make=evidenceUrl=>normalizeCandidates({results:[{name,sources:{steam:{
+    status:'found',candidates:[{url:profile,discovered:true,evidence:[{url:evidenceUrl,verified:true}]}]
+  }}}]},[name])[0].sources[0];
+  assert.equal(make(other).candidates.length,0);
+  assert.equal(make(other).status,'not_fetched');
+  assert.equal(make(profile).candidates.length,1);
+});
