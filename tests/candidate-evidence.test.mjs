@@ -438,3 +438,21 @@ test('YouTube profile evidence cannot validate a different channel',()=>{
   assert.equal(valid.candidates.length,1);
   assert.deepEqual(valid.candidates[0].evidence.map(e=>e.url),[profile]);
 });
+
+test('YouTube evidence rejects malformed shorts/live/watch video identifiers',()=>{
+  const profile='https://www.youtube.com/@example';
+  const check=link=>normalizeCandidates({results:[{name,sources:{youtube:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence:[{url:link,verified:true,kind:'video'}]
+  }]}}}]},[name])[0].sources[2];
+  for(const link of [
+    'https://www.youtube.com/shorts/%2F',
+    'https://www.youtube.com/live/%20',
+    'https://www.youtube.com/shorts/'+ 'x'.repeat(65),
+    'https://www.youtube.com/watch?v=%2F'
+  ])assert.equal(check(link).candidates.length,0,link);
+  for(const link of [
+    'https://www.youtube.com/shorts/abc_123-xyz',
+    'https://www.youtube.com/live/abc_123-xyz',
+    'https://www.youtube.com/watch?v=abc_123-xyz'
+  ])assert.equal(check(link).candidates.length,1,link);
+});
