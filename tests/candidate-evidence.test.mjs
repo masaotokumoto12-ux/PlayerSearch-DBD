@@ -184,3 +184,23 @@ test('repeated response rows cannot bypass the twelve-evidence cap',()=>{
   assert.deepEqual(out.candidates[0].evidence.map(e=>e.url),
     Array.from({length:12},(_,i)=>'https://x.com/example/status/'+String(100+i)));
 });
+
+
+test('a found candidate plus an unfinished response is partial, not fully found',()=>{
+  const url='https://x.com/example';
+  const out=normalizeCandidates({results:[
+    {name,sources:{x:{status:'found',candidates:[{url,discovered:true,evidence:[{url,verified:true}]}]}}},
+    {name,sources:{x:{status:'not_fetched'}}}
+  ]},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.status,'partial');
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].url,url);
+});
+
+test('all confirmed successful rows still report found',()=>{
+  const url='https://x.com/example';
+  const row={name,sources:{x:{status:'found',candidates:[{url,discovered:true,evidence:[{url,verified:true}]}]}}};
+  const out=normalizeCandidates({results:[row,row]},[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.status,'found');
+  assert.equal(out.candidates.length,1);
+});
