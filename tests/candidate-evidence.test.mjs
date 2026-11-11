@@ -514,3 +514,15 @@ test('5ch board URLs reject encoded separators and control characters',()=>{
   ])assert.equal(check(url).candidates.length,0,url);
   assert.equal(check('https://itest.5ch.net/test/read.cgi/board/1234567890').candidates.length,1);
 });
+
+test('5ch board names reject percent escapes, Unicode and path punctuation',()=>{
+  const check=url=>normalizeCandidates(result('5ch',url),[name])[0].sources[5];
+  for(const board of ['game%252Fother','game%2Eother','game%25','game.name','日本語','game%3Fother']){
+    const url='https://itest.5ch.net/test/read.cgi/'+board+'/1760000000/';
+    assert.equal(check(url).candidates.length,0,url);
+  }
+  for(const board of ['gamef','game_123']){
+    const url='https://itest.5ch.net/test/read.cgi/'+board+'/1760000000/';
+    assert.equal(check(url).candidates.length,1,url);
+  }
+});
