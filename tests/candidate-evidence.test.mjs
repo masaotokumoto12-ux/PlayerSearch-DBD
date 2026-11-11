@@ -228,3 +228,28 @@ test('duplicate verified same-account evidence may promote DBD relevance',()=>{
   assert.equal(out.candidates[0].dbdRelated,true);
   assert.equal(out.candidates[0].evidence.length,1);
 });
+
+test('verified duplicate row can promote DBD relevance after evidence cap',()=>{
+  const profile='https://x.com/actual';
+  const posts=Array.from({length:12},(_,i)=>({url:'https://x.com/actual/status/'+(100+i),verified:true,kind:'post'}));
+  const response={results:[
+    {name,sources:{x:{status:'found',candidates:[{url:profile,discovered:true,dbdRelated:false,evidence:posts}]}}},
+    {name,sources:{x:{status:'found',candidates:[{url:profile,discovered:true,dbdRelated:true,evidence:[{url:'https://x.com/actual/status/999',verified:true,kind:'post'}]}]}}}
+  ]};
+  const out=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.candidates.length,1);
+  assert.equal(out.candidates[0].evidence.length,12);
+  assert.equal(out.candidates[0].dbdRelated,true);
+});
+
+test('unrelated row cannot promote DBD relevance after evidence cap',()=>{
+  const profile='https://x.com/actual';
+  const posts=Array.from({length:12},(_,i)=>({url:'https://x.com/actual/status/'+(100+i),verified:true,kind:'post'}));
+  const response={results:[
+    {name,sources:{x:{status:'found',candidates:[{url:profile,discovered:true,dbdRelated:false,evidence:posts}]}}},
+    {name,sources:{x:{status:'found',candidates:[{url:profile,discovered:true,dbdRelated:true,evidence:[{url:'https://x.com/other/status/999',verified:true,kind:'post'}]}]}}}
+  ]};
+  const out=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(out.candidates[0].evidence.length,12);
+  assert.equal(out.candidates[0].dbdRelated,false);
+});
