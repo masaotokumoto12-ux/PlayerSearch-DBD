@@ -423,3 +423,18 @@ test('Steam profile evidence must match the candidate account',()=>{
   assert.equal(make(other).status,'not_fetched');
   assert.equal(make(profile).candidates.length,1);
 });
+
+test('YouTube profile evidence cannot validate a different channel',()=>{
+  const profile='https://www.youtube.com/@actual';
+  const other='https://www.youtube.com/@unrelated';
+  const response={results:[{name,sources:{youtube:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence:[{url:other,verified:true,kind:'profile'}]
+  }]}}}]};
+  const out=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='youtube');
+  assert.equal(out.candidates.length,0);
+  assert.equal(out.status,'not_fetched');
+  response.results[0].sources.youtube.candidates[0].evidence.push({url:profile,verified:true,kind:'profile'});
+  const valid=normalizeCandidates(response,[name])[0].sources.find(s=>s.media==='youtube');
+  assert.equal(valid.candidates.length,1);
+  assert.deepEqual(valid.candidates[0].evidence.map(e=>e.url),[profile]);
+});
