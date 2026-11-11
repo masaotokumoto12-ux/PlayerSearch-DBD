@@ -395,3 +395,20 @@ test('Twitch candidate must be a single valid channel path; clips only as eviden
   assert.equal(out.candidates.length,1);
   assert.equal(out.candidates[0].evidence[0].url,'https://www.twitch.tv/example/clip/abc-123');
 });
+
+test('more than 100 evidence entries yields partial, even when first 100 validate',()=>{
+  const profile='https://x.com/example';
+  const make=(valid)=>({url:valid?'https://x.com/example/status/123':'https://x.com/unrelated/status/123',verified:true,kind:'post'});
+  const check=evidence=>normalizeCandidates({results:[{name,sources:{x:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence
+  }]}}}]},[name])[0].sources[1];
+  const full=check(Array.from({length:100},()=>make(true)));
+  assert.equal(full.status,'found');
+  const cut=check([...Array.from({length:100},()=>make(true)),make(true)]);
+  assert.equal(cut.status,'partial');
+  assert.equal(cut.candidates.length,1);
+  assert.equal(cut.candidates[0].evidence.length,1);
+  const noMatch=check([...Array.from({length:100},()=>make(false)),make(true)]);
+  assert.equal(noMatch.status,'partial');
+  assert.equal(noMatch.candidates.length,0);
+});
