@@ -526,3 +526,18 @@ test('5ch board names reject percent escapes, Unicode and path punctuation',()=>
     assert.equal(check(url).candidates.length,1,url);
   }
 });
+
+test('Twitch rejects ambiguous doubled separators and keeps canonical profile/clip paths',()=>{
+  const profile='https://www.twitch.tv/example';
+  for(const bad of ['https://www.twitch.tv/example//','https://www.twitch.tv/example//clip/abc','https://www.twitch.tv/example/clip//abc','https://www.twitch.tv/example/clip/abc//']){
+    const response=result('twitch',bad);
+    assert.equal(normalizeCandidates(response,[name])[0].sources[3].candidates.length,0,bad);
+  }
+  for(const good of [profile,'https://www.twitch.tv/example/']){
+    assert.equal(normalizeCandidates(result('twitch',good),[name])[0].sources[3].candidates.length,1,good);
+  }
+  const response={results:[{name,sources:{twitch:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence:[{url:'https://www.twitch.tv/example/clip/abc',verified:true,kind:'post'}]
+  }]}}}]};
+  assert.equal(normalizeCandidates(response,[name])[0].sources[3].candidates.length,1);
+});
