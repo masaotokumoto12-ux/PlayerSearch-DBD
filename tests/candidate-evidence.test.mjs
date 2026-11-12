@@ -585,3 +585,14 @@ test('X service routes are never accepted as discovered player profiles',()=>{
   const normal=normalizeCandidates(result('x','https://x.com/real_player'),[name])[0].sources.find(s=>s.media==='x');
   assert.equal(normal.candidates.length,1);
 });
+
+test('YouTube allowed host aliases identify the same profile, but not another channel',()=>{
+  const profile='https://www.youtube.com/@actual';
+  const check=(evidenceUrl,channelUrl)=>normalizeCandidates({results:[{name,sources:{youtube:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence:[{url:evidenceUrl,verified:true,channelUrl}]
+  }]}}}]},[name])[0].sources[2];
+  assert.equal(check('https://m.youtube.com/@actual').candidates.length,1);
+  assert.equal(check('https://m.youtube.com/watch?v=abc123','https://youtube.com/@actual').candidates.length,1);
+  assert.equal(check('https://m.youtube.com/@other').candidates.length,0);
+  assert.equal(check('https://m.youtube.com/watch?v=abc123','https://youtube.com/@other').candidates.length,0);
+});
