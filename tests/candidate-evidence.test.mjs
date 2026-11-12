@@ -541,3 +541,24 @@ test('Twitch rejects ambiguous doubled separators and keeps canonical profile/cl
   }]}}}]};
   assert.equal(normalizeCandidates(response,[name])[0].sources[3].candidates.length,1);
 });
+
+test('X and TikTok reject doubled path separators in profiles and posts',()=>{
+  for(const [media,profile,post] of [
+    ['x','https://x.com/example','https://x.com/example/status/12345'],
+    ['tiktok','https://www.tiktok.com/@example','https://www.tiktok.com/@example/video/12345']
+  ]){
+    const index=media==='x'?1:4;
+    const check=url=>normalizeCandidates(result(media,url),[name])[0].sources[index];
+    for(const bad of [profile+'//',profile+'//extra',post.replace(media==='x'?'/status/':'/video/',media==='x'?'//status/':'//video/'),post+'//']){
+      assert.equal(check(bad).candidates.length,0,bad);
+    }
+    assert.equal(check(profile).candidates.length,1,profile);
+    assert.equal(check(profile+'/').candidates.length,1,profile);
+    const evidence={results:[{name,sources:{[media]:{status:'found',candidates:[{
+      url:profile,discovered:true,evidence:[{url:post,verified:true,kind:'post'}]
+    }]}}}]};
+    assert.equal(normalizeCandidates(evidence,[name])[0].sources[index].candidates.length,1,post);
+    evidence.results[0].sources[media].candidates[0].evidence[0].url=post+'//';
+    assert.equal(normalizeCandidates(evidence,[name])[0].sources[index].candidates.length,0,post+'//');
+  }
+});
