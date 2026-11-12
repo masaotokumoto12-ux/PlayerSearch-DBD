@@ -562,3 +562,14 @@ test('X and TikTok reject doubled path separators in profiles and posts',()=>{
     assert.equal(normalizeCandidates(evidence,[name])[0].sources[index].candidates.length,0,post+'//');
   }
 });
+
+
+test('Twitch clip slug length is bounded without rejecting valid clips',()=>{
+  const profile='https://www.twitch.tv/example';
+  const check=slug=>normalizeCandidates({results:[{name,sources:{twitch:{status:'found',candidates:[{
+    url:profile,discovered:true,evidence:[{url:profile+'/clip/'+slug,verified:true,kind:'video'}]
+  }]}}}]},[name])[0].sources.find(s=>s.media==='twitch');
+  assert.equal(check('a'.repeat(100)).candidates.length,1);
+  assert.equal(check('a'.repeat(101)).candidates.length,0);
+  assert.equal(check('a'.repeat(101)).status,'not_fetched');
+});
