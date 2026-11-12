@@ -573,3 +573,15 @@ test('Twitch clip slug length is bounded without rejecting valid clips',()=>{
   assert.equal(check('a'.repeat(101)).candidates.length,0);
   assert.equal(check('a'.repeat(101)).status,'not_fetched');
 });
+
+
+test('X service routes are never accepted as discovered player profiles',()=>{
+  for(const route of ['login','signup','compose','account','privacy','tos','help']){
+    const url='https://x.com/'+route;
+    const source=normalizeCandidates(result('x',url),[name])[0].sources.find(s=>s.media==='x');
+    assert.equal(source.candidates.length,0,url);
+    assert.equal(source.status,'not_fetched',url);
+  }
+  const normal=normalizeCandidates(result('x','https://x.com/real_player'),[name])[0].sources.find(s=>s.media==='x');
+  assert.equal(normal.candidates.length,1);
+});
