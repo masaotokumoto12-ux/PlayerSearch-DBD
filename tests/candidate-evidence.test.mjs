@@ -596,3 +596,13 @@ test('YouTube allowed host aliases identify the same profile, but not another ch
   assert.equal(check('https://m.youtube.com/@other').candidates.length,0);
   assert.equal(check('https://m.youtube.com/watch?v=abc123','https://youtube.com/@other').candidates.length,0);
 });
+
+
+test('5ch board-prefixed thread URLs require matching board identifiers',()=>{
+  const good='https://itest.5ch.net/gamef/test/read.cgi/gamef/1760000000/';
+  const bad='https://itest.5ch.net/gamef/test/read.cgi/other/1760000000/';
+  const source=url=>normalizeCandidates(result('5ch',url),[name])[0].sources[5];
+  assert.equal(source(good).candidates.length,1);
+  assert.equal(source(bad).candidates.length,0);
+  assert.equal(source(bad).status,'not_fetched');
+});
