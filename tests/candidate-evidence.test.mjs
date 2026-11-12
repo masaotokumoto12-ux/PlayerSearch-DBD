@@ -606,3 +606,21 @@ test('5ch board-prefixed thread URLs require matching board identifiers',()=>{
   assert.equal(source(bad).candidates.length,0);
   assert.equal(source(bad).status,'not_fetched');
 });
+
+test('evidence kind is derived from validated route, not an untrusted label',()=>{
+  const cases=[
+    ['x','https://x.com/example','https://x.com/example/status/123','video','post'],
+    ['youtube','https://www.youtube.com/@example','https://www.youtube.com/watch?v=abc123','post','video'],
+    ['tiktok','https://www.tiktok.com/@example','https://www.tiktok.com/@example/video/123','post','video'],
+    ['twitch','https://www.twitch.tv/example','https://www.twitch.tv/example/clip/abc','post','video'],
+    ['x','https://x.com/example','https://x.com/example','video','profile']
+  ];
+  for(const [media,url,link,claimed,expected] of cases){
+    const response={results:[{name,sources:{[media]:{status:'found',candidates:[{
+      url,discovered:true,evidence:[{url:link,verified:true,kind:claimed}]
+    }]}}}]};
+    const source=normalizeCandidates(response,[name])[0].sources.find(s=>s.media===media);
+    assert.equal(source.candidates.length,1,media);
+    assert.equal(source.candidates[0].evidence[0].kind,expected,link);
+  }
+});
